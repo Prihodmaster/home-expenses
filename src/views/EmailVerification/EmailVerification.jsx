@@ -10,6 +10,7 @@ import CardFooter from "components/Card/CardFooter.jsx";
 import { Link } from "react-router-dom";
 import TextField from '@material-ui/core/TextField';
 import {connect} from "react-redux";
+import {verifyEmail} from "../../actions/UserActions";
 
 const styles = {
   cardCategoryWhite: {
@@ -33,26 +34,19 @@ const styles = {
         color: "#9c28b0"
     }
 };
-let inputValueEmail;
-let inputValueVerification;
+// let inputValueEmail;
+// let inputValueVerification;
 class EmailVerification extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            inputValueEmail: '',
-            inputValueVerification: ''
-        };
-    }
+    componentDidMount = () => {
+        if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
+    };
     emailVerification = () => {
-        inputValueEmail = this.state.inputValueEmail;
-        inputValueVerification = this.state.inputValueVerification;
-        console.log(inputValueEmail, inputValueVerification);
-    }
-    getValueEmail = (e) => {
-        this.setState({inputValueEmail: e.target.value});
-    }
-    getValueVerificationCode = (e) => {
-        this.setState({inputValueVerification: e.target.value});
+        let newUser = {
+            email: this.props.match.params.email,
+            verifyKey: Number(this.props.match.params.verifyKey)
+        };
+        console.log(newUser)
+        this.props.verifyEmail(newUser)
     }
     render() {
         console.log(this.props);
@@ -75,8 +69,7 @@ class EmailVerification extends Component {
                                             type="text"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
-                                            value={this.state.inputValueEmail}
-                                            onChange={this.getValueEmail}
+                                            value = {this.props.match.params.email}
                                         />
                                     </GridItem>
                                 </Grid>
@@ -88,8 +81,7 @@ class EmailVerification extends Component {
                                             type="text"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
-                                            value={this.state.inputValueVerification}
-                                            onChange={this.getValueVerificationCode}
+                                            value = {this.props.match.params.verifyKey}
                                         />
                                     </GridItem>
                                 </Grid>
@@ -114,8 +106,8 @@ const mapStateToProps = state => ({
     user: state.userData
 });
 
-// const mapDispatchToProps = dispatch => ({
-//     signIn: () => dispatch(signIn())
-// });
+const mapDispatchToProps = dispatch => ({
+    verifyEmail: (newUser) => dispatch(verifyEmail(newUser))
+});
 
-export default connect(mapStateToProps)(withStyles(styles)(EmailVerification));
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(EmailVerification));

@@ -2,23 +2,26 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Switch, Route, Redirect } from "react-router-dom";
-// creates a beautiful scrollbar
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
-// @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
-// core components
 import Header from "components/Header/Header.jsx";
 import Footer from "components/Footer/Footer.jsx";
 import Sidebar from "components/Sidebar/Sidebar.jsx";
-
 import dashboardRoutes from "routes/dashboard.jsx";
-
 import dashboardStyle from "assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
-
 import image from "assets/img/sidebar-2.jpg";
 import logo from "assets/img/reactlogo.png";
 
+// const switchRoutes = (
+//   <Switch>
+//     {dashboardRoutes.map((prop, key) => {
+//       if (prop.redirect)
+//         return <Redirect from={prop.path} to={prop.to} key={key} />;
+//       return <Route path={prop.path} component={prop.component} key={key} />;
+//     })}
+//   </Switch>
+// );
 const switchRoutes = (
   <Switch>
     {dashboardRoutes.map((prop, key) => {
@@ -57,7 +60,7 @@ class App extends React.Component {
     return (
       <div className={classes.wrapper}>
         <Sidebar
-          routes={dashboardRoutes}
+          routes={dashboardRoutes.filter(item => item.token === Boolean(localStorage.getItem('token')))}
           logoText={"Home EXPENSES"}
           logo={logo}
           image={image}
@@ -68,7 +71,7 @@ class App extends React.Component {
         />
         <div className={classes.mainPanel} ref="mainPanel">
           <Header
-            routes={dashboardRoutes}
+            routes={dashboardRoutes.filter(item => item.token === Boolean(localStorage.getItem('token')))}
             handleDrawerToggle={this.handleDrawerToggle}
             {...rest}
           />
@@ -80,7 +83,7 @@ class App extends React.Component {
           ) : (
             <div className={classes.map}>{switchRoutes}</div>
           )}
-          {this.getRoute() ? <Footer /> : null}
+          {this.getRoute() ? <Footer routes={dashboardRoutes.filter(item => item.token === Boolean(localStorage.getItem('token')))} /> : null}
         </div>
       </div>
     );

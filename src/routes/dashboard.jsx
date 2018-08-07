@@ -15,45 +15,56 @@ const dashboardRoutes = [
       sidebarName: "Dashboard",
       navbarName: "Dashboard",
       icon: Dashboard,
-      component: DashboardPage
+      component: DashboardPage,
+      token: true
     },
     {
       path: "/reports",
       sidebarName: "Reports",
       navbarName: "Reports",
       icon: Receipt,
-      component: Reports
+      component: Reports,
+      token: true
     },
     {
       path: "/config",
       sidebarName: "Config",
       navbarName: "Config",
       icon: Settings,
-      component: Config
+      component: Config,
+      token: true
     },
     {
         path: "/signin",
         sidebarName: "Sign in",
         navbarName: "Sign in",
         icon: Person,
-        component: SignIn
+        component: SignIn,
+        token: false
     },
     {
         path: "/signup",
         sidebarName: "Sign up",
         navbarName: "Sign up",
         icon: Person,
-        component: SignUp
+        component: SignUp,
+        token: false
     },
     {
-        path: "/emailverification",
+        path: "/emailverify/:email/:verifyKey",
         sidebarName: "Email verification",
         navbarName: "Email verification",
         icon: Person,
         component: EmailVerification,
-        token: false
+        token: false,
+        hide: true
     },
-    { redirect: true, path: "/", to: "/dashboard", navbarName: "Redirect" }
+    {
+        redirect: true,
+        path: "/",
+        to: "/signin",
+        navbarName: "Redirect"
+    }
 ];
 
 export default dashboardRoutes;

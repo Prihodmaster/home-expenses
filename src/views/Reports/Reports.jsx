@@ -63,6 +63,9 @@ class Reports extends React.Component {
             open: false
         };
     };
+    componentDidMount = () => {
+        if(!localStorage.getItem('token'))  this.props.history.push('/signin')
+    };
     totalUAH = [];
     componentWillMount = () => {
         this.totalUAHcategory();

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, {Component} from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Grid from "@material-ui/core/Grid";
@@ -17,8 +18,6 @@ import {signIn} from '../../actions/UserActions';
 // import {LOGOUT_SUCCESS} from "../../constants/constants";
 
 
-let inputValueEmail;
-let inputValuePassword;
 const styles = {
     cardCategoryWhite: {
         color: "rgba(255,255,255,.62)",
@@ -42,22 +41,20 @@ const styles = {
     }
 };
 class SignIn extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
+    componentDidMount = () => {
+        if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
+    };
+    state = {
             inputValueEmail: '',
             inputValuePassword: ''
         };
-    }
 
     signInValue = () => {
-        inputValueEmail = this.state.inputValueEmail;
-        inputValuePassword = this.state.inputValuePassword;
-        // let newUser = {
-        //     "email": "slava@mail.ru",
-        //     "password": "111111"
-        // }
-        // this.props.signIn(newUser);
+        let newUser = {
+            email: this.state.inputValueEmail,
+            password: this.state.inputValuePassword
+        };
+        this.props.signIn(newUser);
     }
     getValueEmail = (e) => {
         this.setState({inputValueEmail: e.target.value});
@@ -123,7 +120,6 @@ class SignIn extends Component {
 const mapStateToProps = state => ({
     user: state.userData
 });
-
 const mapDispatchToProps = dispatch => ({
     signIn: (newUser) => dispatch(signIn(newUser))
 });

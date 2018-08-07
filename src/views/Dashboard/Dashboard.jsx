@@ -14,6 +14,7 @@ import TextField from '@material-ui/core/TextField';
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 import {connect} from "react-redux";
 import {dashboardAddCategory, dashboardUpdate} from "../../actions/UserActions";
+import history from "../../index";
 
 class Dashboard extends React.Component {
     constructor(props) {
@@ -27,8 +28,14 @@ class Dashboard extends React.Component {
             copyAll: []
         };
     }
+    componentDidMount = () => {
+        if(!localStorage.getItem('token'))  this.props.history.push('/signin');
+        // this.props.dashboardUpdate();
+    };
+
     copyAll = [];
     componentWillMount = () => {
+        // if(!localStorage.getItem('token'))  this.props.history.push('/signin');
         this.copyAll = [];
         this.props.categories.categories && this.props.categories.categories.map(item =>{
                 this.copyAll.push(item);
@@ -38,11 +45,6 @@ class Dashboard extends React.Component {
         );
         this.setState({copyAll: this.copyAll})
     };
-
-    // componentDidMount = () => {
-    //     this.props.dashboardUpdate();
-    // };
-
 
     copysubCategories = item => {
         item.subCategories.map((item) => {
@@ -79,6 +81,7 @@ class Dashboard extends React.Component {
 
 
     render() {
+        console.log(this.props);
         const { classes } = this.props;
         const dashboard = this.props.dashboardCategories.dashboardCategories;
         return (

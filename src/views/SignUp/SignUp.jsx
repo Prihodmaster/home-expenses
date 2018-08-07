@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Grid from "@material-ui/core/Grid";
@@ -48,14 +49,14 @@ const styles = {
 };
 
 class SignUp extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            inputValueEmail: '',
-            inputValuePassword: '',
-            inputValueRepeatPassword: '',
-        };
-    }
+    componentDidMount = () => {
+        if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
+    };
+    state = {
+        inputValueEmail: '',
+        inputValuePassword: '',
+        inputValueRepeatPassword: ''
+    };
 
 // validate = (form_id,email) => {
 //     let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
@@ -74,20 +75,18 @@ class SignUp extends React.Component {
         this.setState({inputValueRepeatPassword: e.target.value});
     }
     signUp = () => {
-        // this.state.inputValuePassword === this.state.inputValueRepeatPassword ? console.log(this.props, this.state): alert("Passwords do not match");
-        // let newUser = {
-        //     "displayName": "Slava",
-        //     "email": "slava@mail.ru",
-        //     "password": "111111"
-        // }
-        let newUser = {
-            "email": "slava@google.ru",
-            "password": "111111"
-        }
-        this.props.signUp(newUser)
+        if(this.state.inputValuePassword === this.state.inputValueRepeatPassword){
+            let newUser = {
+                email: this.state.inputValueEmail,
+                password: this.state.inputValuePassword,
+                verified: false
+            };
+            this.props.signUp(newUser)
+        } else alert("Passwords do not match");
     };
 
     render() {
+        console.log(this.props);
         const { classes } = this.props;
         return (
             <div>

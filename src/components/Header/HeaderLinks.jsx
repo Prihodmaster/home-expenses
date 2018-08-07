@@ -8,11 +8,13 @@ import Paper from "@material-ui/core/Paper";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Hidden from "@material-ui/core/Hidden";
 import Person from "@material-ui/icons/Person";
+import AccountCircle from "@material-ui/icons/AccountCircle";
 import Button from "components/CustomButtons/Button.jsx";
 import { Link } from "react-router-dom";
 import headerLinksStyle from "assets/jss/material-dashboard-react/components/headerLinksStyle";
 import MenuItem from "@material-ui/core/MenuItem";
-
+import {signOut} from "../../actions/UserActions";
+import {connect} from 'react-redux';
 
 class HeaderLinks extends React.Component {
     state = {
@@ -21,16 +23,20 @@ class HeaderLinks extends React.Component {
     handleClick = () => {
         this.setState({ open: !this.state.open });
     };
-
     handleClose = () => {
         this.setState({ open: false });
     };
+    logOut = () => {
+        this.setState({ open: false });
+        this.props.signOut();
+    };
     render() {
+        console.log(this.props)
         const { classes } = this.props;
         const { open } = this.state;
         return (
             <div>
-                <span>Email</span>
+                <span>{(this.props.user.user) ? this.props.user.user.email : null}</span>
                 <Manager className={classes.manager}>
                     <Target>
                         <Button
@@ -43,11 +49,11 @@ class HeaderLinks extends React.Component {
                             onClick={this.handleClick}
                             className={classes.buttonLink}
                         >
-                            <Person className={classes.icons} />
+                            {
+                                !localStorage.getItem('token') ? <Person className={classes.icons} />:<AccountCircle className={classes.icons} />
+                            }
                             <Hidden mdUp>
-                                <p onClick={this.handleClick} className={classes.linkText}>
-                                    Notification
-                                </p>
+                                <p onClick={this.handleClick} className={classes.linkText}>Sign out</p>
                             </Hidden>
                         </Button>
                     </Target>
@@ -69,10 +75,7 @@ class HeaderLinks extends React.Component {
                                 <Paper className={classes.dropdown}>
                                     <MenuList role="menu">
                                         <Link to='/signin'>
-                                            <MenuItem onClick={this.handleClose} className={classes.dropdownItem}>Sign In</MenuItem>
-                                        </Link>
-                                        <Link to='/signup'>
-                                            <MenuItem onClick={this.handleClose} className={classes.dropdownItem}>Sign Up</MenuItem>
+                                            <MenuItem onClick={this.logOut} className={classes.dropdownItem}>Sign Out</MenuItem>
                                         </Link>
                                     </MenuList>
                                 </Paper>
@@ -86,4 +89,10 @@ class HeaderLinks extends React.Component {
     }
 }
 
-export default withStyles(headerLinksStyle)(HeaderLinks);
+const mapStateToProps = state => ({
+    user: state.userData
+});
+const mapDispatchToProps = dispatch => ({
+    signOut: () => dispatch(signOut())
+});
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(headerLinksStyle)(HeaderLinks));

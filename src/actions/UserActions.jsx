@@ -1,9 +1,6 @@
+/* eslint-disable */
 import {
-    // LOGIN_REQUEST,
-    // LOGIN_FAIL,
-    // LOGIN_SUCCESS,
-    LOGOUT_SUCCESS,
-    // ADD_CATEGORY,
+    VERIFY_EMAIL_OK,
     CATEGORIES_LIST,
     ADD_CATEGORIE_NAME,
     UP_CATEGORY,
@@ -13,25 +10,21 @@ import {
     DOWN_SUBCATEGORY,
     SIGN_UP,
     SIGN_IN,
+    SIGN_OUT,
     SUB_CATEGORIES_LIST,
     DASHBOARD_CATEGORIES_LIST,
-    DASHBOARD_CATEGORIES_UPDATE
+    DASHBOARD_CATEGORIES_UPDATE,
+    CATEGORIES_UPDATE
 } from '../constants/constants';
 import axios from 'axios';
-
-export function logout() {
-    return {
-        type: LOGOUT_SUCCESS
-    }
-}
+import history from '../index';
 
 export const signUp = newUser => dispatch => {
-    axios.post('http://localhost:3001/user', newUser)
-        .then(function (response) {
-            console.log(response.data);
-            dispatch(signUpOk(response.data))
+    axios.post('http://localhost:3001/signup', newUser)
+        .then((response) => {
+            response.data === 'user with this email already exists' ? alert(response.data): dispatch(signUpOk(response.data))
         })
-        .catch(function (error) {console.log(error)});
+        .catch((error) => {console.log(error)});
 }
 export const signUpOk = data => {
     return {
@@ -39,25 +32,44 @@ export const signUpOk = data => {
         payload: data
     }
 }
-
-export const signIn = newUser => dispatch => {
-    axios.post('http://localhost:3001/login', newUser)
+export const verifyEmail = newUser => dispatch => {
+    axios.post('http://localhost:3001/verify', newUser)
         .then(function (response) {
+            response.data === 'Incorrect email / verification code' ? alert(response.data): dispatch(signInOk(response.data))
             console.log(response.data);
-            dispatch(signInOk(response.data))
+        })
+        .catch(function (error) {console.log(error)});
+}
+export const signIn = newUser => dispatch => {
+    axios.post('http://localhost:3001/signin', newUser)
+        .then(function (response) {
+            response.data === 'Incorrect email/password' ? alert(response.data): dispatch(signInOk(response.data))
         })
         .catch(function (error) {console.log(error)});
 }
 export const signInOk = data => {
+    console.log(data);
+    if(data.token) localStorage.setItem('token', data.token);
+    if(localStorage.getItem('token'))  history.push('/dashboard');
     return {
         type: 'SIGN_IN',
         payload: data
     }
 }
+export const signOut = () => {
+    localStorage.clear();
+    return {
+        type: 'SIGN_OUT',
+        payload: null
+    }
+}
+
+
 
 export const addCategory = category => dispatch => {
-    axios.post('http://localhost:3001/expenses/collections/categories', category)
+    axios.post('http://localhost:3001/categories', category)
         .then(function (response) {
+            console.log(response.data);
             dispatch(setCategory(response.data))
         })
         .catch(function (error) {console.log(error)});
@@ -75,43 +87,45 @@ export function addSubcategory(subcategory, indexCategory) {
         payload: subcategory
     }
 }
-export function addCategoryName(categoryName, indexCategory) {
+export function addCategoryName(categoryName, index) {
     return {
         type: ADD_CATEGORIE_NAME,
         name: categoryName,
-        index: indexCategory
+        index: index
     }
 }
-export function upCategory(indexCategory) {
+export function upCategory(index, swap) {
     return {
         type: UP_CATEGORY,
-        index: indexCategory
+        index: index,
+        swap: swap
     }
 }
-export function downCategory(indexCategory) {
+export function downCategory(index, swap) {
     return {
         type: DOWN_CATEGORY,
-        index: indexCategory
+        index: index,
+        swap: swap
     }
 }
-export function deleteCategory(indexCategory) {
+export function deleteCategory(index) {
     return {
         type: DELETE_CATEGORY,
-        index: indexCategory
+        index: index
     }
 }
-export function upSubCategory(indexCategory, indexSubCategory) {
+export function upSubCategory(index, swap) {
     return {
         type: UP_SUBCATEGORY,
-        index: indexCategory,
-        indexSub: indexSubCategory
+        index: index,
+        swap: swap
     }
 }
-export function downSubCategory(indexCategory, indexSubCategory) {
+export function downSubCategory(index, swap) {
     return {
         type: DOWN_SUBCATEGORY,
-        index: indexCategory,
-        indexSub: indexSubCategory
+        index: index,
+        swap: swap
     }
 }
 
@@ -129,7 +143,7 @@ export const setDashboardAddCategory = (data) => {
     }
 };
 
-export const dashboardUpdate = category => dispatch => {
+export const dashboardUpdate = dispatch => {
     axios.get('http://localhost:3001/expenses/collections/dashboards/')
         .then(function (response) {
             console.log(response.data);
@@ -147,6 +161,27 @@ export const setDashboardUpdate = (data) => {
         payload: data
     }
 };
+
+export const categoriesUpdate = () => dispatch => {
+    axios.get('http://localhost:3001/categories')
+        .then(function (response) {
+            console.log(response.data);
+            dispatch(setCategoriesUpdate(response.data))
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+        .then(function () {
+        });
+};
+export const setCategoriesUpdate = (data) => {
+    return {
+        type: 'CATEGORIES_UPDATE',
+        payload: data
+    }
+};
+
+
 
 // получить массив с категориями с базы данных
 // axios.get('http://localhost:3001/expenses/')

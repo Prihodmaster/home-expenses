@@ -15,14 +15,17 @@ function Footer({ ...props }) {
             <div className={classes.container}>
                 <div className={classes.left}>
                     <List className={classes.list}>
-                        <ListItem className={classes.inlineBlock}>
-                            <Link to='/signin'>SIGN IN</Link>
-                        </ListItem>
-                        <ListItem className={classes.inlineBlock}>
-                            <Link to='/signup'>SIGN UP</Link>
-                        </ListItem>
+                        {props.routes.map((item, index) => {
+                            if (item.redirect || item.hide) return null;
+                            return (
+                                <ListItem className={classes.inlineBlock} key={index}>
+                                    <Link to={item.path} className={classes.block}>
+                                        {item.sidebarName}
+                                    </Link>
+                                </ListItem>
+                            )
+                        })}
                     </List>
-
                 </div>
                 <p className={classes.right}>
           <span>
