@@ -2,12 +2,12 @@ import { LOGIN_REQUEST, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_SUCCESS, SIGN_UP, SIGN
 
 const initialState ={
     user: {
-        email: "eee",
-        password: "eee",
+        email: "qqq",
+        password: "qqq",
         verified: true,
         verifyKey: 0,
         __v: 0,
-        _id: "5b68589334651b081c0a38c9"
+        _id: "5b6994cbdb833a0e300998d6"
     }
 };
 

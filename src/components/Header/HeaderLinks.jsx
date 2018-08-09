@@ -31,7 +31,6 @@ class HeaderLinks extends React.Component {
         this.props.signOut();
     };
     render() {
-        console.log(this.props)
         const { classes } = this.props;
         const { open } = this.state;
         return (

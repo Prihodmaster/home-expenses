@@ -14,8 +14,9 @@ import Typography from '@material-ui/core/Typography';
 import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import {connect} from "react-redux";
-import {addCategory, addCategoryName, upCategory, downCategory, deleteCategory, upSubCategory, downSubCategory, addSubcategory, categoriesUpdate} from "../../actions/UserActions";
+import {addCategory, renameCategory, moveCategory, deleteCategory, upSubCategory, downSubCategory, addSubcategory, categoriesUpdate} from "../../actions/UserActions";
 import MenuItem from '@material-ui/core/MenuItem';
+import _ from 'lodash';
 
 let category;
 let subcategory;
@@ -74,42 +75,115 @@ const styles = theme => ({
     },
 });
 class Config extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            category: [],
-            groupCategory: {},
-            subcategory: [],
-            open: false,
-            openName: false,
-            openSubcategoryList: false,
-            indexCategory: 0,
-            indexSubCategory: 0,
-            inputValueCategoryName: "",
-            subcategories: "",
-        };
-    }
-    componentDidMount = () => {
-        if(!localStorage.getItem('token'))  this.props.history.push('/signin');
-        // setTimeout(() => this.props.categoriesUpdate(), 1000);
-        // if(!this.props.categories) this.props.categoriesUpdate()
-        this.props.categoriesUpdate()
+    state = {
+        category: [],
+        groupCategory: {},
+        subcategory: [],
+        openDelete: false,
+        openName: false,
+        openSubcategoryList: false,
+        indexCategory: 0,
+        tempID: 0,
+        indexSubCategory: 0,
+        inputValueCategoryName: "",
+        subcategories: "",
     };
 
-    // groupedCategories = groupCategories(this.props.categories.categories);
-    // groupCategories = function (categories) {
-    //     return categories.length && categories.reduce((groupedCategories, category) => {
-    //         if (!groupedCategories[category.parentId]) {
-    //             groupedCategories[category.parentId] = []
-    //         }
-    //         groupedCategories[category.parentId].push(category)
-    //         return groupedCategories;
+    componentDidMount = () => {
+        if(!localStorage.getItem('token'))  this.props.history.push('/signin');
+        this.props.categoriesUpdate();
+    };
+    componentWillMount = () => {
+        // this.groupCategories();
+
+        this.setState({groupCategory: 1})
+    };
+    // componentDidUpdate = () => {
+    //
+    // };
+
+    // grouped = this.groupCategories(this.props.categories.categories);
+    // groupCategories = categories => {
+    //     return categories.length && categories.reduce((grouped, category) => {
+    //         if (!grouped[category.parentId]) {grouped[category.parentId] = []}
+    //         grouped[category.parentId].push(category)
+    //         return grouped;
     //     }, {});
     // };
 
-    componentWillMount = () => {
-        // this.groupCategories();
-        this.setState({groupCategory: 1})
+    getModalStyle = () => {
+        const top = 50;
+        const left = 50;
+        return {
+            top: `${top}%`,
+            left: `${left}%`,
+            transform: `translate(-${top}%, -${left}%)`,
+        };
+    };
+    addCategory = () => {
+        let maxLocate = this.props.categories.categories.sort((a, b) => {
+            if ((a.parentID===0 && a.location) > (b.parentID===0 && b.location)) {return -1}
+            if ((a.parentID===0 && a.location) < (b.parentID===0 && b.location)) {return 1}
+            return 0;
+        });
+        let locate = maxLocate[0] ? maxLocate[0].location: 0;
+        locate +=1;
+        this.setState({
+            category: {
+                userID: this.props.user.user._id,
+                location: locate,
+                parentID: 0,
+                children: false,
+                name: locate
+            }
+        }, ()=>{this.props.addCategory(this.state.category)})
+    };
+    handleOpenDelete = id => {
+        this.setState({
+            openDelete: true,
+            tempID: id
+        });
+    };
+    handleCloseDelete = () => {
+        this.setState({ openDelete: false });
+    };
+    deleteCategory = () => {
+        this.setState({openDelete: false}, () => {
+            this.props.deleteCategory({id: this.state.tempID});
+        })
+    };
+    handleOpenName = (id, i) => {
+        this.setState({
+            openName: true,
+            inputValueCategoryName: this.props.categories.categories[i].name,
+            tempID: id
+        });
+    };
+    handleCloseName = () => {
+        this.setState({openName: false})
+    };
+    renameCat =() => {
+        this.setState({openName: false}, () => {
+            let rename = {
+                name: this.state.inputValueCategoryName,
+                id: this.state.tempID
+            };
+            this.props.renameCategory(rename);
+        })
+    };
+    moveUpCategory = (item) => {
+        let current = _.findIndex(this.props.categories.categories, i => i._id == item._id);
+        let swap = _.findLastIndex(this.props.categories.categories, i => i.parentID===0, current - 1);
+        if(current!==0) {
+            this.props.moveCategory({current: item, swap: this.props.categories.categories[swap]})
+        }
+    };
+    moveDownCategory = (item) => {
+        let current = _.findIndex(this.props.categories.categories, i => i._id == item._id);
+        let swap = _.findIndex(this.props.categories.categories, i => i.parentID===0, current + 1);
+        if(current!==this.props.categories.categories.length-1) {
+            this.props.moveCategory({current: item, swap: this.props.categories.categories[swap]})
+        }
     };
 
     copysubCategories = item => {
@@ -120,41 +194,6 @@ class Config extends React.Component {
             }
         })
     }
-    getModalStyle = () => {
-        const top = 50;
-        const left = 50;
-        return {
-            top: `${top}%`,
-            left: `${left}%`,
-            transform: `translate(-${top}%, -${left}%)`,
-        };
-    };
-    handleOpen = (i) => {
-        this.setState({
-            open: true,
-            indexCategory: i
-        });
-    };
-    handleClose = () => {
-        this.setState({ open: false });
-    };
-    handleOpenName = (i) => {
-        console.log(i);
-        this.setState({
-            openName: true,
-            indexCategory: i,
-            inputValueCategoryName: this.props.categories.categories[i].name
-        });
-    };
-    handleCloseName = () => {
-        this.setState({
-            openName: false,
-            category: {name: this.state.inputValueCategoryName}
-        }, () => {
-            this.props.addCategoryName(this.state.inputValueCategoryName, this.state.indexCategory);
-        })
-
-    };
     handleOpenSubcategory = (i) => {
         this.setState({
             openSubcategoryList: true,
@@ -169,26 +208,6 @@ class Config extends React.Component {
     getValueCategoryName = (e) => {
         this.setState({inputValueCategoryName: e.target.value});
     };
-    location = 0;
-    addCategory = () => {
-        this.location += 1;
-        this.setState({
-            category: {
-                userID: this.props.user.user._id,
-                location: this.location,
-                parentID: 0,
-                children: false,
-                date: new Date().toString(),
-                name: 'пусто',
-                description: '',
-                valueUAH: 0
-            }
-        }, ()=>{
-            category = this.state.category;
-            console.log(category);
-            this.props.addCategory(category);
-        })
-    };
     addSubcategory = () => {
         this.setState({
             subcategory: {name: this.state.subcategories}
@@ -198,26 +217,6 @@ class Config extends React.Component {
             this.props.addSubcategory();
         })
 
-    };
-    deleteCategory = () => {
-        this.props.deleteCategory(this.state.indexCategory);
-        this.setState({open: false});
-    };
-    moveUpCategory = (index) => {
-        let x = this.props.categories.categories;
-        let swap = 0;
-        for (let i = 0; i < index; i++) {
-            if (x[i].parentID===0) {swap=i}
-        }
-        this.props.upCategory(index, swap);
-    };
-    moveDownCategory = (index) => {
-        let x = this.props.categories.categories;
-        let swap = 0;
-        for (let i = x.length-1; i > index; i--) {
-            if (x[i].parentID===0) {swap=i}
-        }
-        this.props.downCategory(index, swap);
     };
     handleChangeCategory = name => event => {
         this.setState({
@@ -270,11 +269,15 @@ class Config extends React.Component {
                             </CardHeader>
                             <CardBody>
                                 {
-                                    categories && categories.map((item, i) => {
+                                    categories && categories.sort(function (a, b) {
+                                        if (a.location < b.location) {return -1}
+                                        if (a.location > b.location) {return 1}
+                                        return 0;
+                                    }).map((item, i) => {
                                         if(item.parentID===0){
                                             return (
                                                 <div key={i}>
-                                                    <span className={classes.nameCategory} onClick={() => this.handleOpenName(i)}>{item.name}</span>
+                                                    <span className={classes.nameCategory} onClick={() => this.handleOpenName(item._id, i)}>{item.name}</span>
                                                     <Modal open={this.state.openName} onClose={this.handleCloseName}>
                                                         <div style={this.getModalStyle()} className={classes.paper}>
                                                             <Typography variant="title" id="modal-title">Edit category name</Typography>
@@ -288,21 +291,21 @@ class Config extends React.Component {
                                                                 value={this.state.inputValueCategoryName}
                                                                 onChange={this.getValueCategoryName}
                                                             />
-                                                            <Button color="primary" className={classes.reportsButton} onClick={() => this.handleCloseName()}>SAVE</Button>
+                                                            <Button color="primary" className={classes.reportsButton} onClick={() => this.renameCat()}>SAVE</Button>
                                                         </div>
                                                     </Modal>
                                                     <span>
-                                                        <Button color="info" onClick={() => this.moveUpCategory(i)}><ArrowUpward/></Button>
-                                                        <Button color="info" onClick={() => this.moveDownCategory(i)}><ArrowDownward/></Button>
-                                                        <Button color="warning" onClick={() => this.handleOpen(i)}><Cancel/></Button>
-                                                        {/*<Modal open={this.state.open} onClose={this.handleClose}>*/}
-                                                            {/*<div style={this.getModalStyle()} className={classes.paper}>*/}
-                                                                {/*<Typography variant="title" id="modal-title">Do you really want to Delete this Category?</Typography>*/}
-                                                                {/*<Typography variant="title" id="modal-title">{categories[this.state.indexCategory].name}</Typography>*/}
-                                                                {/*<Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>*/}
-                                                                {/*<Button color="primary" className={classes.reportsButton} onClick={this.handleClose}>NO</Button>*/}
-                                                            {/*</div>*/}
-                                                         {/*</Modal>*/}
+                                                        <Button color="info" onClick={() => this.moveUpCategory(item)}><ArrowUpward/></Button>
+                                                        <Button color="info" onClick={() => this.moveDownCategory(item)}><ArrowDownward/></Button>
+                                                        <Button color="warning" onClick={() => this.handleOpenDelete(item._id)}><Cancel/></Button>
+                                                        <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
+                                                            <div style={this.getModalStyle()} className={classes.paper}>
+                                                                <Typography variant="title" id="modal-title">Do you really want to Delete this Category?</Typography>
+                                                                <Typography variant="title" id="modal-title">{categories[this.state.indexCategory] && categories[this.state.indexCategory].name}</Typography>
+                                                                <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
+                                                                <Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>
+                                                            </div>
+                                                         </Modal>
                                                     <Button color="info" onClick={() => this.handleOpenSubcategory(i)}>*</Button>
                                                     </span>
                                                     {/*{this.sub(item.id)}*/}
@@ -350,11 +353,10 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     categoriesUpdate: () => dispatch(categoriesUpdate()),
     addCategory: (category) => dispatch(addCategory(category)),
+    renameCategory: (rename) => dispatch(renameCategory(rename)),
     addSubcategory: () => dispatch(addSubcategory(subcategory, indexCategory)),
-    addCategoryName: (categoryName, index) => dispatch(addCategoryName(categoryName, index)),
-    upCategory: (index, swap) => dispatch(upCategory(index, swap)),
-    downCategory: (index, swap) => dispatch(downCategory(index, swap)),
-    deleteCategory: (index) => dispatch(deleteCategory(index)),
+    moveCategory: (data) => dispatch(moveCategory(data)),
+    deleteCategory: (del) => dispatch(deleteCategory(del)),
     upSubCategory: (index, swap) => dispatch(upSubCategory(index, swap)),
     downSubCategory: (index, swap) => dispatch(downSubCategory(index, swap))
 });

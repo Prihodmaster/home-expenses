@@ -13,47 +13,24 @@ import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 import {connect} from "react-redux";
-import {dashboardAddCategory, dashboardUpdate} from "../../actions/UserActions";
+import {addExpense, expensesUpdate, categoriesUpdate} from "../../actions/UserActions";
 import history from "../../index";
 
 class Dashboard extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            value: 0,
-            categories: "",
-            inputValueDescription: "",
-            inputValueUAH: "",
-            category: [],
-            copyAll: []
-        };
-    }
+    state = {
+        value: 0,
+        categories: "",
+        inputValueDescription: "",
+        inputValueUAH: "",
+        category: []
+    };
+
     componentDidMount = () => {
         if(!localStorage.getItem('token'))  this.props.history.push('/signin');
-        // this.props.dashboardUpdate();
+        this.props.categoriesUpdate();
+        this.props.expensesUpdate();
     };
 
-    copyAll = [];
-    componentWillMount = () => {
-        // if(!localStorage.getItem('token'))  this.props.history.push('/signin');
-        this.copyAll = [];
-        this.props.categories.categories && this.props.categories.categories.map(item =>{
-                this.copyAll.push(item);
-                if(item.subCategories){this.copysubCategories(item)}
-                return this.copyAll
-            }
-        );
-        this.setState({copyAll: this.copyAll})
-    };
-
-    copysubCategories = item => {
-        item.subCategories.map((item) => {
-            this.copyAll.push(item);
-            if(item.subCategories){
-                this.copysubCategories(item);
-            }
-        })
-    }
     handleChangeCategory = name => event => {
         this.setState({[name]: event.target.value})
     };
@@ -64,26 +41,24 @@ class Dashboard extends React.Component {
         e.target.value = e.target.value.replace(/[^0-9.]/g, '');
         this.setState({inputValueUAH: e.target.value});
     };
-    newCategory = () => {
+    newExpense = () => {
         if(this.state.categories!=="" && this.state.inputValueUAH!==""){
-            this.setState({
-                category: {
-                    date: new Date().toString(),
-                    name: this.state.categories,
-                    description: this.state.inputValueDescription,
-                    valueUAH: this.state.inputValueUAH,
-                    subCategories: [{name: 'subcategory1'}]
-                }
-                 }, ()=>{this.props.dashboardAddCategory(this.state.category)}
-            )
+            let expense = {
+                date: new Date().toString(),
+                name: this.state.categories,
+                userID: this.props.user.user._id,
+                description: this.state.inputValueDescription,
+                valueUAH: this.state.inputValueUAH,
+            };
+            this.props.addExpense(expense)
         }
     };
-
 
     render() {
         console.log(this.props);
         const { classes } = this.props;
-        const dashboard = this.props.dashboardCategories.dashboardCategories;
+        const expenses = this.props.expenses.expenses;
+        const categories = this.props.categories.categories;
         return (
             <div>
                 <Grid container>
@@ -103,16 +78,12 @@ class Dashboard extends React.Component {
                                             className={classes.TextField}
                                             value={this.state.categories}
                                             onChange={this.handleChangeCategory('categories')}
-                                            SelectProps={{
-                                                MenuProps: {
-                                                    className: classes.menu,
-                                                },
-                                            }}
+                                            SelectProps={{MenuProps: {className: classes.menu}}}
                                             fullWidth
                                             margin="normal"
                                         >
                                             {
-                                                this.state.copyAll.map((item, index) => (
+                                                categories && categories.map((item, index) => (
                                                     <MenuItem key={index} value={item.name}>
                                                         {item.name}
                                                     </MenuItem>
@@ -146,7 +117,7 @@ class Dashboard extends React.Component {
                                     </GridItem>
                                     <GridItem xs={3} sm={3} md={3}>
                                         <CardFooter className={classes.CardFooter}>
-                                            <Button color="primary" onClick={this.newCategory}>ADD EXPENSES</Button>
+                                            <Button color="primary" onClick={this.newExpense}>ADD EXPENSES</Button>
                                         </CardFooter>
                                     </GridItem>
                                 </Grid>
@@ -164,11 +135,11 @@ class Dashboard extends React.Component {
                                     tableHeaderColor="primary"
                                     tableHead={["Date", "Category", "Expenses", "Value, UAH"]}
                                     tableData={
-                                        dashboard ? dashboard.sort(function (a, b) {
+                                        expenses ? expenses.sort(function (a, b) {
                                         if (a.date > b.date) {return -1}
                                         if (a.date < b.date) {return 1}
                                         return 0;
-                                        }).map(item => {
+                                        }).slice(0, 20).map(item => {
                                             return [item.date.substring(0, 15), item.name, item.description, item.valueUAH]
                                         }): [["", "", "", ""]]
                                     }
@@ -185,13 +156,14 @@ class Dashboard extends React.Component {
 const mapStateToProps = state => ({
     user: state.userData,
     categories: state.categoriesList,
-    dashboardCategories: state.dashboardCategoriesList
+    expenses: state.expensesList
 
 });
 
 const mapDispatchToProps = dispatch => ({
-    dashboardAddCategory: (category) => dispatch(dashboardAddCategory(category)),
-    dashboardUpdate: () => dispatch(dashboardUpdate())
+    expensesUpdate: () => dispatch(expensesUpdate()),
+    categoriesUpdate: () => dispatch(categoriesUpdate()),
+    addExpense: (data) => dispatch(addExpense(data))
 });
 
 Dashboard.propTypes = {

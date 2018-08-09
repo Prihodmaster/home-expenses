@@ -1,10 +1,8 @@
 /* eslint-disable */
 import {
-    VERIFY_EMAIL_OK,
     CATEGORIES_LIST,
-    ADD_CATEGORIE_NAME,
-    UP_CATEGORY,
-    DOWN_CATEGORY,
+    RENAME_CATEGORY,
+    MOVE_CATEGORY,
     DELETE_CATEGORY,
     UP_SUBCATEGORY,
     DOWN_SUBCATEGORY,
@@ -12,8 +10,8 @@ import {
     SIGN_IN,
     SIGN_OUT,
     SUB_CATEGORIES_LIST,
-    DASHBOARD_CATEGORIES_LIST,
-    DASHBOARD_CATEGORIES_UPDATE,
+    EXPENSES_LIST,
+    EXPENSES_UPDATE,
     CATEGORIES_UPDATE
 } from '../constants/constants';
 import axios from 'axios';
@@ -64,22 +62,88 @@ export const signOut = () => {
     }
 }
 
-
-
+export const categoriesUpdate = () => dispatch => {
+    axios.get('http://localhost:3001/categories')
+        .then(function (response) {dispatch(categoriesUpdateOk(response.data))})
+        .catch(function (error) {console.log(error)})
+};
+export const categoriesUpdateOk = (data) => {
+    return {
+        type: 'CATEGORIES_UPDATE',
+        payload: data
+    }
+};
 export const addCategory = category => dispatch => {
     axios.post('http://localhost:3001/categories', category)
         .then(function (response) {
             console.log(response.data);
-            dispatch(setCategory(response.data))
+            dispatch(addCategoryOk(response.data))
         })
         .catch(function (error) {console.log(error)});
 }
-export const setCategory = (data) => {
+export const addCategoryOk = data => {
         return {
             type: 'CATEGORIES_LIST',
             payload: data
         }
 }
+
+export const renameCategory = rename => dispatch => {
+    axios.post('http://localhost:3001/categories/rename', rename)
+        .then(function (response) {
+            dispatch(renameCategoryOk(response.data))
+        })
+        .catch(function (error) {console.log(error)});
+}
+export const renameCategoryOk = data => {
+    return {
+        type: 'RENAME_CATEGORY',
+        payload: data
+    }
+}
+
+export const deleteCategory = del => dispatch => {
+    axios.post('http://localhost:3001/categories/delete', del)
+        .then(function (response) {
+            console.log(response.data);
+            dispatch(deleteCategoryOk(response.data))
+        })
+        .catch(function (error) {console.log(error)});
+}
+export const deleteCategoryOk = data => {
+    return {
+        type: 'DELETE_CATEGORY',
+        payload: data
+    }
+}
+
+export const moveCategory = data => dispatch => {
+    axios.post('http://localhost:3001/categories/move', data)
+        .then(response => dispatch(moveCategoryOk(response.data)))
+        .catch(error => console.log(error));
+}
+export const moveCategoryOk = data => {
+    return {
+        type: MOVE_CATEGORY,
+        payload: data
+    }
+}
+
+export const expensesUpdate = () => dispatch => {
+    axios.get('http://localhost:3001/expenses')
+        .then(response => dispatch(expensesUpdateOk(response.data)))
+        .catch(error => console.log(error))
+};
+export const expensesUpdateOk = data => {
+    return {
+        type: 'EXPENSES_UPDATE',
+        payload: data
+    }
+};
+
+
+
+
 export function addSubcategory(subcategory, indexCategory) {
     return {
         type: SUB_CATEGORIES_LIST,
@@ -91,26 +155,6 @@ export function addCategoryName(categoryName, index) {
     return {
         type: ADD_CATEGORIE_NAME,
         name: categoryName,
-        index: index
-    }
-}
-export function upCategory(index, swap) {
-    return {
-        type: UP_CATEGORY,
-        index: index,
-        swap: swap
-    }
-}
-export function downCategory(index, swap) {
-    return {
-        type: DOWN_CATEGORY,
-        index: index,
-        swap: swap
-    }
-}
-export function deleteCategory(index) {
-    return {
-        type: DELETE_CATEGORY,
         index: index
     }
 }
@@ -129,57 +173,20 @@ export function downSubCategory(index, swap) {
     }
 }
 
-export const dashboardAddCategory = category => dispatch => {
-    axios.post('http://localhost:3001/expenses/collections/dashboards', category)
-        .then(function (response) {
-            dispatch(setDashboardAddCategory(response.data))
-        })
-        .catch(function (error) {console.log(error)});
-};
-export const setDashboardAddCategory = (data) => {
-    return {
-        type: 'DASHBOARD_CATEGORIES_LIST',
-        payload: data
-    }
-};
 
-export const dashboardUpdate = dispatch => {
-    axios.get('http://localhost:3001/expenses/collections/dashboards/')
-        .then(function (response) {
-            console.log(response.data);
-            dispatch(setDashboardUpdate(response.data))
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
-        .then(function () {
-        });
-};
-export const setDashboardUpdate = (data) => {
-    return {
-        type: 'DASHBOARD_CATEGORIES_UPDATE',
-        payload: data
-    }
-};
 
-export const categoriesUpdate = () => dispatch => {
-    axios.get('http://localhost:3001/categories')
-        .then(function (response) {
-            console.log(response.data);
-            dispatch(setCategoriesUpdate(response.data))
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
-        .then(function () {
-        });
-};
-export const setCategoriesUpdate = (data) => {
+export const addExpense = data => dispatch => {
+    axios.post('http://localhost:3001/expenses', data)
+        .then( response => dispatch(addExpenseOk(response.data)))
+        .catch(error => console.log(error));
+}
+export const addExpenseOk = data => {
     return {
-        type: 'CATEGORIES_UPDATE',
+        type: 'EXPENSES_LIST',
         payload: data
     }
-};
+}
+
 
 
 

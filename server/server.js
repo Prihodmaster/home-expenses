@@ -13,7 +13,7 @@ const port = 3001;
 app.use(bodyParser.urlencoded({extended: true }));
 app.use(bodyParser.json());
 
-mongoose.connect(db, function (err) {
+mongoose.connect(db,  err => {
     if (err) throw err;
     console.log('Successfully connected');
 });
@@ -22,19 +22,15 @@ const categoriesSchema = mongoose.Schema({
     location: Number,
     parentID: Number,
     children: Boolean,
-    date: String,
-    name: String,
-    description: String,
-    valueUAH: Number
+    name: String
 
 });
-const dashboardsSchema = mongoose.Schema({
+const expensesSchema = mongoose.Schema({
+    userID: String,
     date: String,
     name: String,
     valueUAH: String,
-    description: String,
-    subCategories: [{name: String}],
-    parentID: Number
+    description: String
 
 });
 const usersSchema = mongoose.Schema({
@@ -46,7 +42,7 @@ const usersSchema = mongoose.Schema({
 });
 
 const categories = mongoose.model('categories', categoriesSchema);
-const dashboards = mongoose.model('dashboards', dashboardsSchema);
+const expenses = mongoose.model('expenses', expensesSchema);
 const users = mongoose.model('users', usersSchema);
 
 app.use(cors());
@@ -55,25 +51,22 @@ app.post('/categories', (req, res) => {
     category.save().then(item => res.send(item));
 });
 app.get('/categories', (req, res) => {
-    categories.find(function (err, categories) {
+    categories.find((err, categories) => {
         if (err) return console.error(err);
         res.send(categories)
     });
 });
-app.get('/expenses/collections/dashboards', (req, res) => {
-    dashboards.find(function (err, dashboards) {
+
+app.post('/expenses', (req, res) => {
+    let expense = new expenses (req.body);
+    expense.save().then(item => res.send(item));
+});
+app.get('/expenses', (req, res) => {
+    expenses.find((err, expenses) => {
         if (err) return console.error(err);
-        console.log(dashboards);
-        res.send(dashboards)
+        res.send(expenses)
     });
 });
-app.post('/expenses/collections/dashboards', (req, res) => {
-    let dashboard = new dashboards (req.body);
-    dashboard.save();
-    res.send(req.body);
-});
-
-
 
 app.post('/signup', (req, res) => {
     users.findOne({email: req.body.email}, (err, user) => {
@@ -100,20 +93,22 @@ app.post('/verify', (req, res) => {
     users.findOne({email: req.body.email}, (err, user) => {
         if(err) res.json({type: false, data: "Error occured: " + err});
         if(!user) res.send('Incorrect email / verification code');
-        if(req.body.verifyKey === user.verifyKey && user.verified === false) {
-            console.log("совпали ключи верификации");
-            const payload = {
-                id: user._id,
-                email: user.email
-            };
-            jwt.sign(payload, 'secret', (err, token) => {
-                user.verified = true;
-                user.verifyKey = 0;
-                user.save(err => {
-                    if(err) res.json({type: false, data: "Error occured: " + err});
-                    res.json({token, user})
+        else {
+            if(req.body.verifyKey === user.verifyKey && user.verified === false) {
+                console.log("совпали ключи верификации");
+                const payload = {
+                    id: user._id,
+                    email: user.email
+                };
+                jwt.sign(payload, 'secret', (err, token) => {
+                    user.verified = true;
+                    user.verifyKey = 0;
+                    user.save(err => {
+                        if(err) res.json({type: false, data: "Error occured: " + err});
+                        res.json({token, user})
+                    })
                 })
-            })
+            }else res.send('Incorrect email / verification code')
         }
     });
 });
@@ -130,6 +125,23 @@ app.post('/signin', (req, res) => {
     });
 });
 
+app.post('/categories/rename', (req, res) => {
+    categories.findByIdAndUpdate(req.body.id, { name: req.body.name }, { new: true }, (err, category) => {
+        if (err) throw err;
+        res.send(category)
+    })
+});
+app.post('/categories/delete', (req, res) => {
+    categories.findOneAndRemove({_id: req.body.id}, (err, category) =>{
+        if(err) return console.log(err);
+        res.send(category._id)
+    })
+});
+app.post('/categories/move', (req, res) => {
+    categories.findByIdAndUpdate(req.body.current._id, { location: req.body.swap.location }, { new: true }, err => {if (err) throw err});
+    categories.findByIdAndUpdate(req.body.swap._id, { location: req.body.current.location }, { new: true }, err => {if (err) throw err});
+    res.json(req.body);
+});
 
 
 
