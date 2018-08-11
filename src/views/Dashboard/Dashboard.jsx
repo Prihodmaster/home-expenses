@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
@@ -14,7 +15,6 @@ import TextField from '@material-ui/core/TextField';
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 import {connect} from "react-redux";
 import {addExpense, expensesUpdate, categoriesUpdate} from "../../actions/UserActions";
-import history from "../../index";
 
 class Dashboard extends React.Component {
     state = {
@@ -50,12 +50,16 @@ class Dashboard extends React.Component {
                 description: this.state.inputValueDescription,
                 valueUAH: this.state.inputValueUAH,
             };
-            this.props.addExpense(expense)
+            this.props.addExpense(expense);
+            this.setState({
+                categories: "",
+                inputValueDescription: "",
+                inputValueUAH: "",
+            });
         }
     };
 
     render() {
-        console.log(this.props);
         const { classes } = this.props;
         const expenses = this.props.expenses.expenses;
         const categories = this.props.categories.categories;
@@ -100,6 +104,7 @@ class Dashboard extends React.Component {
                                             className={classes.TextField}
                                             margin="normal"
                                             fullWidth
+                                            value={this.state.inputValueDescription}
                                             onChange={this.getValueDescription}
                                         />
                                     </GridItem>
@@ -112,6 +117,7 @@ class Dashboard extends React.Component {
                                             margin="normal"
                                             fullWidth
                                             placeholder="UAH"
+                                            value={this.state.inputValueUAH}
                                             onChange={this.getValueUAH}
                                         />
                                     </GridItem>

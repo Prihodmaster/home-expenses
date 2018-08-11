@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
@@ -14,6 +15,7 @@ import Typography from '@material-ui/core/Typography';
 import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import {connect} from "react-redux";
+import { categoriesUpdate, expensesUpdate } from "../../actions/UserActions";
 
 const styles = theme => ({
     paper: {
@@ -53,22 +55,22 @@ const Day = 86400000;
 const Week = 604800000;
 const Month = 2592000000;
 class Reports extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            sortTimeCategory: this.props.categories.categories,
+        state = {
+            sortTimeCategory: this.props.expenses.expenses,
             Interval: Day,
-            startPeriod: 1532066375000,
-            endPeriod: 1531720775000,
+            startPeriod: 1534240800000,
+            endPeriod: 1533895200000,
             open: false
         };
-    };
+
     componentDidMount = () => {
-        if(!localStorage.getItem('token'))  this.props.history.push('/signin')
+        if(!localStorage.getItem('token'))  this.props.history.push('/signin');
+        this.props.categoriesUpdate();
+        this.props.expensesUpdate();
     };
     totalUAH = [];
     componentWillMount = () => {
-        this.totalUAHcategory();
+        // this.totalUAHcategory();
     };
     getModalStyle = () => {
         const top = 50;
@@ -84,8 +86,8 @@ class Reports extends React.Component {
             startPeriod: this.state.startPeriod - this.state.Interval,
             endPeriod: this.state.endPeriod - this.state.Interval
         }, () => {
-            if(this.props.categories.categories) {
-                let FilteredCategory = this.props.categories.categories.filter(item => new Date(item.date).getTime() <= this.state.startPeriod && new Date(item.date).getTime() >= this.state.endPeriod);
+            if(this.props.expenses.expenses) {
+                let FilteredCategory = this.props.expenses.expenses.filter(item => new Date(item.date).getTime() <= this.state.startPeriod && new Date(item.date).getTime() >= this.state.endPeriod);
                 this.setState({
                     sortTimeCategory: FilteredCategory
                 })
@@ -98,8 +100,9 @@ class Reports extends React.Component {
             startPeriod: this.state.startPeriod + this.state.Interval,
             endPeriod: this.state.endPeriod + this.state.Interval
         }, () => {
-            if(this.props.categories.categories){
-                let FilteredCategory = this.props.categories.categories.filter(item => new Date(item.date).getTime() <= this.state.startPeriod && new Date(item.date).getTime() >= this.state.endPeriod);
+            if(this.props.expenses.expenses){
+                let FilteredCategory = this.props.expenses.expenses.filter(item => new Date(item.date).getTime() <= this.state.startPeriod && new Date(item.date).getTime() >= this.state.endPeriod);
+                console.log(FilteredCategory)
                 this.setState({
                     sortTimeCategory: FilteredCategory
                 })
@@ -142,7 +145,6 @@ class Reports extends React.Component {
             return this.totalUAH
             }
         );
-
     };
     totalUAHsubCategory = item => {
         item.subCategories && item.subCategories.map((item) => {
@@ -154,35 +156,6 @@ class Reports extends React.Component {
             }
         })
     };
-
-
-    // rezUAH = () => {
-    //     this.state.sortTimeCategory && this.state.sortTimeCategory.map(item =>{
-    //         this.UAH = 0;
-    //         this.UAH = this.UAH + item.valueUAH;
-    //             if(item.subCategories){this.rezUAHsub(item)}
-    //             return this.totalUAH
-    //         }
-    //     );
-    // };
-    // rezUAHsub = item => {
-    //     item.subCategories.map((item) => {
-    //         this.UAH = this.UAH + item.valueUAH;
-    //         if(item.subCategories){this.rezUAHsub(item)}
-    //     })
-    // };
-    //
-    //
-    //
-    // TotallyUAH = () => {
-    //     let total = this.state.sortTimeCategory;
-    //     for (let i = 0; i < length.total; i++) {
-    //         this.rezUAH()
-    //     }
-    //
-    // }
-
-
     nextCubcategory = (item) =>  item.subCategories && item.subCategories.map((item, index) => {
         return (
             <div key={index} className={this.props.classes.tableSumCategory}>
@@ -194,7 +167,10 @@ class Reports extends React.Component {
     });
 
     render() {
+        console.log(this.props);
+        console.log(this.state.sortTimeCategory);
         const { classes } = this.props;
+        // const { categories } = this.props.categories;
         return (
             <div>
                 <Grid container>
@@ -204,7 +180,6 @@ class Reports extends React.Component {
                                 <h4 className={classes.cardTitleWhite}>Expenses reports</h4>
                                 <p className={classes.cardCategoryWhite}>Here is some expenses reports</p>
                             </CardHeader>
-
                             <CardBody>
                                 <Grid container>
                                     <GridItem xs={4} sm={4} md={4}>
@@ -294,11 +269,15 @@ class Reports extends React.Component {
 
 const mapStateToProps = state => ({
     user: state.userData,
-    categories: state.categoriesList
+    categories: state.categoriesList,
+    expenses: state.expensesList
 });
-
+const mapDispatchToProps = dispatch => ({
+    categoriesUpdate: () => dispatch(categoriesUpdate()),
+    expensesUpdate: () => dispatch(expensesUpdate()),
+});
 Reports.propTypes = {
     classes: PropTypes.object.isRequired
 };
 
-export default connect(mapStateToProps)(withStyles(styles)(Reports));
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Reports));

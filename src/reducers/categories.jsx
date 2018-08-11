@@ -1,13 +1,13 @@
+/* eslint-disable */
 import {RENAME_CATEGORY, CATEGORIES_LIST, MOVE_CATEGORY, DELETE_CATEGORY, UP_SUBCATEGORY, DOWN_SUBCATEGORY, SUB_CATEGORIES_LIST, CATEGORIES_UPDATE} from '../constants/constants'
 
-export default function categories(state = {}, action) {
-    switch (action.type) {
+export default function categories(state = {categories: []}, action) {
+ switch (action.type) {
         case CATEGORIES_LIST:
             return { ...state, categories: [...state.categories, action.payload]};
         case CATEGORIES_UPDATE:
             return { ...state, categories: action.payload};
         case RENAME_CATEGORY:
-            console.log(action.payload);
             let copy = [...state.categories];
             copy[copy.findIndex((item) => item._id===action.payload._id)].name = action.payload.name;
             return { ...state, categories: copy};

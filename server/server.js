@@ -20,7 +20,7 @@ mongoose.connect(db,  err => {
 const categoriesSchema = mongoose.Schema({
     userID: String,
     location: Number,
-    parentID: Number,
+    parentID: String,
     children: Boolean,
     name: String
 
