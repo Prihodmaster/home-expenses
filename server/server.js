@@ -28,6 +28,8 @@ const categoriesSchema = mongoose.Schema({
 const expensesSchema = mongoose.Schema({
     userID: String,
     date: String,
+    millisecDate: Number,
+    categoryID: String,
     name: String,
     valueUAH: String,
     description: String

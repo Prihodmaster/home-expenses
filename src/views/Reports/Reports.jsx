@@ -166,6 +166,66 @@ class Reports extends React.Component {
         )
     });
 
+
+    group = categories => {
+        return categories.length && categories.reduce((grouped, category) => {
+            if (!grouped[category.parentID]) {grouped[category.parentID] = []}
+            grouped[category.parentID].push(category);
+            return grouped;
+        }, {})
+    };
+    groupCategories = categories => {
+        const { classes } = this.props;
+        const { grouped } = this.props.categories;
+        return categories.sort(function (a, b) {
+            if (a.location < b.location) {return -1}
+            if (a.location > b.location) {return 1}
+            return 0;
+        }).map(item => (
+            <List key={item._id} className = {classes.categoryList}>
+                <ListItem className = {classes.categoryList}>
+                    <Paper className={classes.categoryPaper}>
+                        <div className={classes.categoryItem}>
+                            <span className={classes.nameCategory} onClick={() => this.handleOpenName(item)}>{item.name}</span>
+                            <Modal open={this.state.openName} onClose={this.handleCloseName}>
+                                <div style={this.getModalStyle()} className={classes.paper}>
+                                    <Typography variant="title" id="modal-title">Edit category name</Typography>
+                                    <TextField
+                                        id="CategoryName"
+                                        label="Edit category name"
+                                        type="text"
+                                        className={classes.TextField}
+                                        margin="normal"
+                                        fullWidth
+                                        value={this.state.inputValueCategoryName}
+                                        onChange={this.getValueCategoryName}
+                                    />
+                                    <Button color="primary" className={classes.reportsButton} onClick={() => this.renameCat()}>SAVE</Button>
+                                </div>
+                            </Modal>
+                            <span>
+                            <Button color="info" onClick={() => this.moveCategory(item, "Up")}><ArrowUpward/></Button>
+                            <Button color="info" onClick={() => this.moveCategory(item, "Down")}><ArrowDownward/></Button>
+                            <Button color="warning" onClick={() => this.handleOpenDelete(item._id)}><Cancel/></Button>
+                            <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
+                                <div style={this.getModalStyle()} className={classes.paper}>
+                                    <Typography variant="title" id="modal-title">Do you really want to Delete this Category?</Typography>
+                                    <Typography variant="title" id="modal-title">{this.props.categories.categories[this.state.indexCategory] && this.props.categories.categories[this.state.indexCategory].name}</Typography>
+                                    <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
+                                    <Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>
+                                </div>
+                             </Modal>
+                            <Button color="info" onClick={() => this.handleOpenSubcategory(i)}>*</Button>
+                            </span>
+                        </div>
+                        {grouped[item._id] && this.groupCategories(grouped[item._id])}
+                    </Paper>
+                </ListItem>
+            </List>
+        ))
+    };
+
+
     render() {
         console.log(this.props);
         console.log(this.state.sortTimeCategory);

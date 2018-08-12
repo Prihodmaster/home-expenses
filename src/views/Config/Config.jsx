@@ -133,7 +133,8 @@ class Config extends React.Component {
         };
     };
     addCategory = () => {
-        let maxLocate = this.props.categories.categories.sort((a, b) => {
+        let temp = [...this.props.categories.categories];
+        let maxLocate = temp.sort((a, b) => {
             if ((a.parentID==0 && a.location) > (b.parentID==0 && b.location)) {return -1}
             if ((a.parentID==0 && a.location) < (b.parentID==0 && b.location)) {return 1}
             return 0;
@@ -184,28 +185,29 @@ class Config extends React.Component {
             this.props.renameCategory(rename);
         })
     };
-    moveUpCategory = (item) => {
-        let current = _.findIndex(this.props.categories.categories, i => i._id == item._id);
-        let swap = _.findLastIndex(this.props.categories.categories, i => i.parentID==item.parentID, current - 1);
-        console.log(current)
-        console.log(swap)
-        if(swap < current && swap!== -1) {
-            console.log("сработало")
-            this.props.moveCategory({current: item, swap: this.props.categories.categories[swap]})
+
+    moveCategory = (item, move) => {
+        let temp = [...this.props.categories.grouped[item.parentID]];
+        let current = _.findIndex(temp, i => i._id == item._id);
+        if(move==="Up"){
+            let swap = _.findLastIndex(temp, i => i.parentID==item.parentID, current - 1);
+            console.log(current)
+            console.log(swap)
+            if(swap < current && swap!== -1) {
+                console.log("сработало")
+                this.props.moveCategory({current: item, swap: temp[swap]})
+            }
+        }
+        if(move==="Down"){
+            let swap = _.findIndex(temp, i => i.parentID==item.parentID, current + 1);
+            console.log(current)
+            console.log(swap)
+            if(swap > current && swap!== -1) {
+                console.log("сработало")
+                this.props.moveCategory({current: item, swap: temp[swap]})
+            }
         }
     };
-    moveDownCategory = (item) => {
-        let current = _.findIndex(this.props.categories.categories, i => i._id == item._id);
-        let swap = _.findIndex(this.props.categories.categories, i => i.parentID==item.parentID, current + 1);
-        console.log(current)
-        console.log(swap)
-        if(swap > current && swap!== -1) {
-            console.log("сработало")
-            this.props.moveCategory({current: item, swap: this.props.categories.categories[swap]})
-        }
-    };
-
-
     handleOpenSubcategory = (i) => {
         this.setState({
             openSubcategoryList: true,
@@ -242,52 +244,9 @@ class Config extends React.Component {
             return grouped;
         }, {})
     };
-    // groupCategories = categories => {
-    //     const { classes } = this.props;
-    //      return categories.sort(function (a, b) {
-    //          if (a.location < b.location) {return -1}
-    //          if (a.location > b.location) {return 1}
-    //          return 0;
-    //      }).map(item => (
-    //          <div key={item._id} className = {classes.configList}>
-    //             <span className={classes.nameCategory} onClick={() => this.handleOpenName(item)}>{item.name}</span>
-    //              <Modal open={this.state.openName} onClose={this.handleCloseName}>
-    //             <div style={this.getModalStyle()} className={classes.paper}>
-    //                 <Typography variant="title" id="modal-title">Edit category name</Typography>
-    //                 <TextField
-    //                     id="CategoryName"
-    //                     label="Edit category name"
-    //                     type="text"
-    //                     className={classes.TextField}
-    //                     margin="normal"
-    //                     fullWidth
-    //                     value={this.state.inputValueCategoryName}
-    //                     onChange={this.getValueCategoryName}
-    //                 />
-    //                 <Button color="primary" className={classes.reportsButton} onClick={() => this.renameCat()}>SAVE</Button>
-    //             </div>
-    //             </Modal>
-    //             <span>
-    //             <Button color="info" onClick={() => this.moveUpCategory(item)}><ArrowUpward/></Button>
-    //             <Button color="info" onClick={() => this.moveDownCategory(item)}><ArrowDownward/></Button>
-    //             <Button color="warning" onClick={() => this.handleOpenDelete(item._id)}><Cancel/></Button>
-    //             <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
-    //                 <div style={this.getModalStyle()} className={classes.paper}>
-    //                     <Typography variant="title" id="modal-title">Do you really want to Delete this Category?</Typography>
-    //                     <Typography variant="title" id="modal-title">{this.props.categories.categories[this.state.indexCategory] && this.props.categories.categories[this.state.indexCategory].name}</Typography>
-    //                     <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
-    //                     <Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>
-    //                 </div>
-    //              </Modal>
-    //             <Button color="info" onClick={() => this.handleOpenSubcategory(i)}>*</Button>
-    //             </span>
-    //              {grouped[item._id] && this.groupCategories(grouped[item._id])}
-    //         </div>
-    //
-    //      ))
-    //  };
     groupCategories = categories => {
         const { classes } = this.props;
+        const { grouped } = this.props.categories;
         return categories.sort(function (a, b) {
             if (a.location < b.location) {return -1}
             if (a.location > b.location) {return 1}
@@ -315,8 +274,8 @@ class Config extends React.Component {
                                 </div>
                             </Modal>
                             <span>
-                            <Button color="info" onClick={() => this.moveUpCategory(item)}><ArrowUpward/></Button>
-                            <Button color="info" onClick={() => this.moveDownCategory(item)}><ArrowDownward/></Button>
+                            <Button color="info" onClick={() => this.moveCategory(item, "Up")}><ArrowUpward/></Button>
+                            <Button color="info" onClick={() => this.moveCategory(item, "Down")}><ArrowDownward/></Button>
                             <Button color="warning" onClick={() => this.handleOpenDelete(item._id)}><Cancel/></Button>
                             <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
                                 <div style={this.getModalStyle()} className={classes.paper}>
@@ -335,13 +294,12 @@ class Config extends React.Component {
             </List>
         ))
     };
+
     render() {
 
-        const { categories } = this.props.categories;
+        const { categories, grouped } = this.props.categories;
         const { classes } = this.props;
-        grouped = this.group(categories);
-        console.log(this.props);
-        console.log(grouped);
+        console.log(this.props.categories);
         return (
             <div>
                 <Grid container>
@@ -352,10 +310,57 @@ class Config extends React.Component {
                                 <p className={this.props.cardCategoryWhite}>Please, config your categories</p>
                             </CardHeader>
                             <CardBody className={classes.categoryBody}>
-                                {/*{grouped[0] && this.groupCategories(grouped[0])}*/}
                                 <List className = {classes.categoryList}>
                                     {grouped[0] && this.groupCategories(grouped[0])}
                                 </List>
+                                {/*{*/}
+                                    {/*categories && categories.sort(function (a, b) {*/}
+                                        {/*if (a.location < b.location) {return -1}*/}
+                                        {/*if (a.location > b.location) {return 1}*/}
+                                        {/*return 0;*/}
+                                    {/*}).map(item => (*/}
+                                        {/*<List key={item._id} className = {classes.categoryList}>*/}
+                                            {/*<ListItem className = {classes.categoryList}>*/}
+                                                {/*<Paper className={classes.categoryPaper}>*/}
+                                                    {/*<div className={classes.categoryItem}>*/}
+                                                        {/*<span className={classes.nameCategory} onClick={() => this.handleOpenName(item)}>{item.name}</span>*/}
+                                                        {/*<Modal open={this.state.openName} onClose={this.handleCloseName}>*/}
+                                                            {/*<div style={this.getModalStyle()} className={classes.paper}>*/}
+                                                                {/*<Typography variant="title" id="modal-title">Edit category name</Typography>*/}
+                                                                {/*<TextField*/}
+                                                                    {/*id="CategoryName"*/}
+                                                                    {/*label="Edit category name"*/}
+                                                                    {/*type="text"*/}
+                                                                    {/*className={classes.TextField}*/}
+                                                                    {/*margin="normal"*/}
+                                                                    {/*fullWidth*/}
+                                                                    {/*value={this.state.inputValueCategoryName}*/}
+                                                                    {/*onChange={this.getValueCategoryName}*/}
+                                                                {/*/>*/}
+                                                                {/*<Button color="primary" className={classes.reportsButton} onClick={() => this.renameCat()}>SAVE</Button>*/}
+                                                            {/*</div>*/}
+                                                        {/*</Modal>*/}
+                                                        {/*<span>*/}
+                                                            {/*<Button color="info" onClick={() => this.moveUpCategory(item)}><ArrowUpward/></Button>*/}
+                                                            {/*<Button color="info" onClick={() => this.moveDownCategory(item)}><ArrowDownward/></Button>*/}
+                                                            {/*<Button color="warning" onClick={() => this.handleOpenDelete(item._id)}><Cancel/></Button>*/}
+                                                            {/*<Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>*/}
+                                                                {/*<div style={this.getModalStyle()} className={classes.paper}>*/}
+                                                                    {/*<Typography variant="title" id="modal-title">Do you really want to Delete this Category?</Typography>*/}
+                                                                    {/*<Typography variant="title" id="modal-title">{this.props.categories.categories[this.state.indexCategory] && this.props.categories.categories[this.state.indexCategory].name}</Typography>*/}
+                                                                    {/*<Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>*/}
+                                                                    {/*<Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>*/}
+                                                                {/*</div>*/}
+                                                             {/*</Modal>*/}
+                                                            {/*<Button color="info" onClick={() => this.handleOpenSubcategory(i)}>*</Button>*/}
+                                                        {/*</span>*/}
+                                                    {/*</div>*/}
+                                                    {/*{grouped[item._id] && this.groupCategories(grouped[item._id])}*/}
+                                                {/*</Paper>*/}
+                                            {/*</ListItem>*/}
+                                        {/*</List>*/}
+                                    {/*))*/}
+                                {/*}*/}
                                 {/*{*/}
                                     {/*categories && categories.sort(function (a, b) {*/}
                                         {/*if (a.location < b.location) {return -1}*/}

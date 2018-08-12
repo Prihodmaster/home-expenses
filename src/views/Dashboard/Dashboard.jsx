@@ -22,6 +22,7 @@ class Dashboard extends React.Component {
         categories: "",
         inputValueDescription: "",
         inputValueUAH: "",
+        catID: "",
         category: []
     };
 
@@ -30,9 +31,11 @@ class Dashboard extends React.Component {
         this.props.categoriesUpdate();
         this.props.expensesUpdate();
     };
-
-    handleChangeCategory = name => event => {
-        this.setState({[name]: event.target.value})
+    //Нужно решить проблему с отображением после выбора
+    handleChangeCategory = () => e => {
+        console.log(e.target)
+        // console.log(item)
+        this.setState({categories: e.target.value.name, catID: e.target.value._id}, () => console.log(this.state))
     };
     getValueDescription = (e) => {
         this.setState({inputValueDescription: e.target.value});
@@ -46,17 +49,22 @@ class Dashboard extends React.Component {
             let expense = {
                 date: new Date().toString(),
                 name: this.state.categories,
+                millisecDate: Date.now(),
+                categoryID: this.state.catID,
                 userID: this.props.user.user._id,
                 description: this.state.inputValueDescription,
                 valueUAH: this.state.inputValueUAH,
             };
-            this.props.addExpense(expense);
+            console.log(expense)
+            // this.props.addExpense(expense);
             this.setState({
                 categories: "",
                 inputValueDescription: "",
                 inputValueUAH: "",
             });
         }
+        // console.log(new Date().getTime())
+        // console.log(Date.now())
     };
 
     render() {
@@ -81,18 +89,17 @@ class Dashboard extends React.Component {
                                             label="Category"
                                             className={classes.TextField}
                                             value={this.state.categories}
-                                            onChange={this.handleChangeCategory('categories')}
+                                            onChange={this.handleChangeCategory()}
                                             SelectProps={{MenuProps: {className: classes.menu}}}
                                             fullWidth
                                             margin="normal"
                                         >
                                             {
-                                                categories && categories.map((item, index) => (
-                                                    <MenuItem key={index} value={item.name}>
+                                                categories && categories.map((item, i) => (
+                                                    <MenuItem key={i} value={item}>
                                                         {item.name}
                                                     </MenuItem>
                                                 ))
-
                                             }
                                         </TextField>
                                     </GridItem>
@@ -165,13 +172,11 @@ const mapStateToProps = state => ({
     expenses: state.expensesList
 
 });
-
 const mapDispatchToProps = dispatch => ({
     expensesUpdate: () => dispatch(expensesUpdate()),
     categoriesUpdate: () => dispatch(categoriesUpdate()),
     addExpense: (data) => dispatch(addExpense(data))
 });
-
 Dashboard.propTypes = {
     classes: PropTypes.object.isRequired
 };

@@ -75,10 +75,7 @@ export const categoriesUpdateOk = (data) => {
 };
 export const addCategory = category => dispatch => {
     axios.post('http://localhost:3001/categories', category)
-        .then(function (response) {
-            console.log(response.data);
-            dispatch(addCategoryOk(response.data))
-        })
+        .then(function (response) {dispatch(addCategoryOk(response.data))})
         .catch(function (error) {console.log(error)});
 }
 export const addCategoryOk = data => {
