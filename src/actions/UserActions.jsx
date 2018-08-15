@@ -137,7 +137,17 @@ export const expensesUpdateOk = data => {
         payload: data
     }
 };
-
+export const addExpense = data => dispatch => {
+    axios.post('http://localhost:3001/expenses', data)
+        .then( response => dispatch(addExpenseOk(response.data)))
+        .catch(error => console.log(error));
+}
+export const addExpenseOk = data => {
+    return {
+        type: 'EXPENSES_LIST',
+        payload: data
+    }
+}
 
 
 
@@ -172,17 +182,7 @@ export function downSubCategory(index, swap) {
 
 
 
-export const addExpense = data => dispatch => {
-    axios.post('http://localhost:3001/expenses', data)
-        .then( response => dispatch(addExpenseOk(response.data)))
-        .catch(error => console.log(error));
-}
-export const addExpenseOk = data => {
-    return {
-        type: 'EXPENSES_LIST',
-        payload: data
-    }
-}
+
 
 
 

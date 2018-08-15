@@ -19,10 +19,11 @@ import {addExpense, expensesUpdate, categoriesUpdate} from "../../actions/UserAc
 class Dashboard extends React.Component {
     state = {
         value: 0,
-        categories: "",
+        catName: "",
         inputValueDescription: "",
         inputValueUAH: "",
         catID: "",
+        parent: "",
         category: []
     };
 
@@ -32,10 +33,18 @@ class Dashboard extends React.Component {
         this.props.expensesUpdate();
     };
     //Нужно решить проблему с отображением после выбора
+    // handleChangeCategory = () => e => {
+    //     let temp = [...this.props.categories.categories];
+    //     let current = _.findIndex(temp, i => i._id == e.target.value);
+    //     this.setState({
+    //         catName: temp[current].name,
+    //         // catName: e.target.value,
+    //         catID: e.target.value,
+    //         parent: temp[current].parentID
+    //     }, () => console.log(this.state))
+    // };
     handleChangeCategory = () => e => {
-        console.log(e.target)
-        // console.log(item)
-        this.setState({categories: e.target.value.name, catID: e.target.value._id}, () => console.log(this.state))
+        this.setState({catName: e.target.value, catID: e.target.value})
     };
     getValueDescription = (e) => {
         this.setState({inputValueDescription: e.target.value});
@@ -45,20 +54,23 @@ class Dashboard extends React.Component {
         this.setState({inputValueUAH: e.target.value});
     };
     newExpense = () => {
-        if(this.state.categories!=="" && this.state.inputValueUAH!==""){
+        let temp = [...this.props.categories.categories];
+        let current = _.findIndex(temp, i => i._id == this.state.catID);
+        if(this.state.catName!=="" && this.state.inputValueUAH!==""){
             let expense = {
                 date: new Date().toString(),
-                name: this.state.categories,
+                name: temp[current].name,
                 millisecDate: Date.now(),
                 categoryID: this.state.catID,
+                parentID: temp[current].parentID,
                 userID: this.props.user.user._id,
                 description: this.state.inputValueDescription,
                 valueUAH: this.state.inputValueUAH,
             };
             console.log(expense)
-            // this.props.addExpense(expense);
+            this.props.addExpense(expense);
             this.setState({
-                categories: "",
+                catName: "",
                 inputValueDescription: "",
                 inputValueUAH: "",
             });
@@ -69,8 +81,8 @@ class Dashboard extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const expenses = this.props.expenses.expenses;
-        const categories = this.props.categories.categories;
+        const { expenses } = this.props.expenses;
+        const { categories } = this.props.categories;
         return (
             <div>
                 <Grid container>
@@ -88,7 +100,7 @@ class Dashboard extends React.Component {
                                             select
                                             label="Category"
                                             className={classes.TextField}
-                                            value={this.state.categories}
+                                            value={this.state.catName}
                                             onChange={this.handleChangeCategory()}
                                             SelectProps={{MenuProps: {className: classes.menu}}}
                                             fullWidth
@@ -96,7 +108,7 @@ class Dashboard extends React.Component {
                                         >
                                             {
                                                 categories && categories.map((item, i) => (
-                                                    <MenuItem key={i} value={item}>
+                                                    <MenuItem key={i} value={item._id}>
                                                         {item.name}
                                                     </MenuItem>
                                                 ))

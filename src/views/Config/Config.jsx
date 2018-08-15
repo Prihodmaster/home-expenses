@@ -100,6 +100,21 @@ const styles = theme => ({
         padding: '0px 16px 3px 6px',
         position: 'relative'
     },
+    modalTextField: {
+        width: "75%",
+        float: "left"
+    },
+    modalButton: {
+        textAlign: "center",
+        padding: "10px 0 0 0"
+    },
+    modalTitle: {
+        textAlign: "center",
+        padding: "0 0 30px 0"
+    },
+    nameCatModal: {
+        color: "red"
+    }
 });
 class Config extends React.Component {
     state = {
@@ -119,14 +134,24 @@ class Config extends React.Component {
         if(!localStorage.getItem('token'))  this.props.history.push('/signin');
         this.props.categoriesUpdate();
     };
-    componentWillMount = () => {
-
-
-    };
     getModalStyle = () => {
         const top = 50;
         const left = 50;
         return {
+            borderRadius: "25px",
+            border: "2px solid #9c27b0",
+            width: "350px",
+            top: `${top}%`,
+            left: `${left}%`,
+            transform: `translate(-${top}%, -${left}%)`,
+        };
+    };
+    getModalStyleSub = () => {
+        const top = 50;
+        const left = 50;
+        return {
+            borderRadius: "25px",
+            border: "2px solid #9c27b0",
             top: `${top}%`,
             left: `${left}%`,
             transform: `translate(-${top}%, -${left}%)`,
@@ -151,10 +176,11 @@ class Config extends React.Component {
             }
         }, ()=>{this.props.addCategory(this.state.category)})
     };
-    handleOpenDelete = id => {
+    handleOpenDelete = item => {
         this.setState({
             openDelete: true,
-            tempID: id
+            inputValueCategoryName: item.name,
+            tempID: item._id
         });
     };
     handleCloseDelete = () => {
@@ -185,7 +211,6 @@ class Config extends React.Component {
             this.props.renameCategory(rename);
         })
     };
-
     moveCategory = (item, move) => {
         let temp = [...this.props.categories.grouped[item.parentID]];
         let current = _.findIndex(temp, i => i._id == item._id);
@@ -264,9 +289,9 @@ class Config extends React.Component {
                                         id="CategoryName"
                                         label="Edit category name"
                                         type="text"
-                                        className={classes.TextField}
                                         margin="normal"
                                         fullWidth
+                                        className={classes.modalTextField}
                                         value={this.state.inputValueCategoryName}
                                         onChange={this.getValueCategoryName}
                                     />
@@ -276,16 +301,39 @@ class Config extends React.Component {
                             <span>
                             <Button color="info" onClick={() => this.moveCategory(item, "Up")}><ArrowUpward/></Button>
                             <Button color="info" onClick={() => this.moveCategory(item, "Down")}><ArrowDownward/></Button>
-                            <Button color="warning" onClick={() => this.handleOpenDelete(item._id)}><Cancel/></Button>
+                            <Button color="warning" onClick={() => this.handleOpenDelete(item)}><Cancel/></Button>
                             <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
                                 <div style={this.getModalStyle()} className={classes.paper}>
-                                    <Typography variant="title" id="modal-title">Do you really want to Delete this Category?</Typography>
-                                    <Typography variant="title" id="modal-title">{this.props.categories.categories[this.state.indexCategory] && this.props.categories.categories[this.state.indexCategory].name}</Typography>
-                                    <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
-                                    <Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>
+                                    <Typography variant="title" id="modal-title">Do you really want to Delete this Category:
+                                        <span className={classes.nameCatModal}> {this.state.inputValueCategoryName} </span>?
+                                    </Typography>
+                                     <div className={classes.modalButton}>
+                                        <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
+                                        <Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>
+                                    </div>
+
                                 </div>
                              </Modal>
-                            <Button color="info" onClick={() => this.handleOpenSubcategory(i)}>*</Button>
+                            <Button color="info" onClick={() => this.handleOpenSubcategory(item)}>*</Button>
+                            <Modal open={this.state.openSubcategoryList} onClose={this.handleCloseSubcategory}>
+                                <div style={this.getModalStyleSub()} className={classes.paper}>
+                                    <Cancel className={classes.Cancel} onClick={() => this.handleCloseSubcategory()}/>
+                                    <Typography variant="title" id="modal-title">Subcategories list</Typography>
+                                    {/*<TextField*/}
+                                    {/*id="select-subcategory"*/}
+                                    {/*select*/}
+                                    {/*label="Subcategory"*/}
+                                    {/*className={classes.TextField}*/}
+                                    {/*value={this.state.subcategories}*/}
+                                    {/*onChange={this.handleChangeCategory('subcategories')}*/}
+                                    {/*SelectProps={{MenuProps: {className: classes.menu}}}*/}
+                                    {/*fullWidth*/}
+                                    {/*margin="normal"*/}
+                                    {/*>*/}
+                                    {/*</TextField>*/}
+                                    <Button color="primary" className={classes.reportsButton} onClick={this.addSubcategory}>ADD CATEGORY</Button>
+                                </div>
+                            </Modal>
                             </span>
                         </div>
                         {grouped[item._id] && this.groupCategories(grouped[item._id])}
@@ -303,7 +351,7 @@ class Config extends React.Component {
         return (
             <div>
                 <Grid container>
-                    <GridItem xs={10} sm={10} md={10}>
+                    <GridItem xs={12} sm={12} md={12}>
                         <Card>
                             <CardHeader color="primary">
                                 <h4 className={this.props.cardTitleWhite}>Edit Categories</h4>

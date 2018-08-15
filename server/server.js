@@ -30,10 +30,10 @@ const expensesSchema = mongoose.Schema({
     date: String,
     millisecDate: Number,
     categoryID: String,
+    parentID: String,
     name: String,
     valueUAH: String,
     description: String
-
 });
 const usersSchema = mongoose.Schema({
     email: String,

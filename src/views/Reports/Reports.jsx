@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Grid from "@material-ui/core/Grid";
 import GridItem from "components/Grid/GridItem.jsx";
-import Table from "components/Table/Table.jsx";
+import Table from "components/Table/TableReports.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
@@ -15,7 +15,8 @@ import Typography from '@material-ui/core/Typography';
 import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import {connect} from "react-redux";
-import { categoriesUpdate, expensesUpdate } from "../../actions/UserActions";
+import { expensesUpdate } from "../../actions/UserActions";
+import _ from 'lodash';
 
 const styles = theme => ({
     paper: {
@@ -27,7 +28,7 @@ const styles = theme => ({
     },
     reportsButton: {
         padding: "10px 10px",
-        margin: "20px 15px",
+        margin: "20px 15px"
     },
     container: {
         display: 'inline-block',
@@ -46,191 +47,111 @@ const styles = theme => ({
     },
     tableCategoryUAH: {
         float: "right"
-    }
-    ,tableSumCategory: {
+    },
+    tableSumCategory: {
         marginLeft: "20px"
-    }
+    },
+    noExpenses: {
+        textAlign: "center",
+        fontWeight: 'bold',
+        padding: '30px'
+    },
+    modalField: {
+        margin: "0 0 0 50px"
+    },
+    modalButton: {
+        textAlign: "center",
+        padding: "10px 0 0 0"
+    },
+    modalTitle: {
+        textAlign: "center",
+        padding: "0 0 30px 0"
+    },
+    modalTitleWarning: {
+        color: "red"
+    },
 });
 const Day = 86400000;
 const Week = 604800000;
 const Month = 2592000000;
+const sortedExpenses = [];
 class Reports extends React.Component {
-        state = {
-            sortTimeCategory: this.props.expenses.expenses,
+    state = {
             Interval: Day,
-            startPeriod: 1534240800000,
-            endPeriod: 1533895200000,
+            startPeriod: new Date().setHours(0, 0, 0, 1) - Day,
+            endPeriod: new Date().setHours(23, 59, 59, 999) + Day,
             open: false
         };
-
     componentDidMount = () => {
         if(!localStorage.getItem('token'))  this.props.history.push('/signin');
-        this.props.categoriesUpdate();
         this.props.expensesUpdate();
-    };
-    totalUAH = [];
-    componentWillMount = () => {
-        // this.totalUAHcategory();
     };
     getModalStyle = () => {
         const top = 50;
         const left = 50;
         return {
+            borderRadius: "25px",
+            border: "2px solid #9c27b0",
             top: `${top}%`,
             left: `${left}%`,
             transform: `translate(-${top}%, -${left}%)`,
         };
     };
-    prevPeriod = () => {
-        this.setState({
-            startPeriod: this.state.startPeriod - this.state.Interval,
-            endPeriod: this.state.endPeriod - this.state.Interval
-        }, () => {
-            if(this.props.expenses.expenses) {
-                let FilteredCategory = this.props.expenses.expenses.filter(item => new Date(item.date).getTime() <= this.state.startPeriod && new Date(item.date).getTime() >= this.state.endPeriod);
-                this.setState({
-                    sortTimeCategory: FilteredCategory
-                })
-            }
-        });
-
-    };
-    nextPeriod = () => {
-        this.setState({
-            startPeriod: this.state.startPeriod + this.state.Interval,
-            endPeriod: this.state.endPeriod + this.state.Interval
-        }, () => {
-            if(this.props.expenses.expenses){
-                let FilteredCategory = this.props.expenses.expenses.filter(item => new Date(item.date).getTime() <= this.state.startPeriod && new Date(item.date).getTime() >= this.state.endPeriod);
-                console.log(FilteredCategory)
-                this.setState({
-                    sortTimeCategory: FilteredCategory
-                })
-            }
-
+    changePeriod = change => {
+        if(change==="prev"){
+            this.setState({
+                startPeriod: this.state.startPeriod - this.state.Interval,
+                endPeriod: this.state.endPeriod - this.state.Interval
+            })
         }
-        );
+        if(change==="next"){
+            this.setState({
+                startPeriod: this.state.startPeriod + this.state.Interval,
+                endPeriod: this.state.endPeriod + this.state.Interval
+            })
+        }
     };
     dayPeriod = () => {this.setState({Interval: Day})};
     weekPeriod = () => {this.setState({Interval: Week})};
     monthPeriod = () => {this.setState({Interval: Month})};
     calendarValuePrev = (e) => {
-        this.setState({endPeriod: Date.parse(e.target.value)})
+        this.setState({startPeriod: Date.parse(e.target.value)-10799999})
     };
     calendarValueNext = (e) => {
-        this.setState({startPeriod: Date.parse(e.target.value)})
+        this.setState({endPeriod: Date.parse(e.target.value)+75599999})
     };
-    handleOpen = () => {
-        this.setState({
-            open: true
-        });
-    };
+    handleOpen = () => {this.setState({open: true})};
     handleClose = () => {
-        let FilteredCategory = this.props.categories.categories.filter(item => new Date(item.date).getTime() <= this.state.startPeriod && new Date(item.date).getTime() >= this.state.endPeriod);
-        this.setState({
-            sortTimeCategory: FilteredCategory,
-            open: false
-        })
-
+        this.state.startPeriod > this.state.endPeriod ? this.setState({
+            open: false,
+            startPeriod: new Date().setHours(0, 0, 0, 1) - Day,
+            endPeriod: new Date().setHours(23, 59, 59, 999) + Day
+        }): this.setState({open: false})
     };
-    arrayTableData = [];
-    UAH = 0;
-    totalUAHcategory = () => {
-        this.totalUAH = 0;
-        this.arrayTableData = [];
-        this.state.sortTimeCategory && this.state.sortTimeCategory.map(item =>{
-            this.totalUAH = this.totalUAH + item.valueUAH;
-            this.arrayTableData.push([item.name, item.valueUAH]);
-            if(item.subCategories){this.totalUAHsubCategory(item)}
-            return this.totalUAH
-            }
-        );
+    addPeriod = () => {
+        this.state.startPeriod < this.state.endPeriod && this.setState({open: false})
     };
-    totalUAHsubCategory = item => {
-        item.subCategories && item.subCategories.map((item) => {
-            this.totalUAH = this.totalUAH + item.valueUAH;
-            let UAH = item.valueUAH + item.valueUAH;
-            this.arrayTableData.push([item.name, UAH]);
-            if(item.subCategories){
-                this.totalUAHsubCategory(item);
-            }
-        })
+    createExpList = expenses => {
+        this.sortExpenses(expenses, sortedExpenses);
+        let x = sortedExpenses
+            .filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod)
+            .map((i) => {return [i.name, i.valueUAH, i.parentID]});
+        sortedExpenses.length = 0;
+        return x;
     };
-    nextCubcategory = (item) =>  item.subCategories && item.subCategories.map((item, index) => {
-        return (
-            <div key={index} className={this.props.classes.tableSumCategory}>
-                <span>{item.name}</span>
-                <span className={this.props.classes.tableCategoryUAH}>{item.valueUAH}</span>
-                {this.nextCubcategory(item)}
-            </div>
-        )
-    });
-
-
-    group = categories => {
-        return categories.length && categories.reduce((grouped, category) => {
-            if (!grouped[category.parentID]) {grouped[category.parentID] = []}
-            grouped[category.parentID].push(category);
-            return grouped;
-        }, {})
+    sortExpenses = (expenses, sortedExpenses) => {
+        const { grouped } = this.props.expenses;
+        return expenses.length && _.uniqBy(expenses, "categoryID").reduce((groups, expense) => {
+            sortedExpenses.push(expense);
+            if (grouped[expense.categoryID]) {this.sortExpenses(grouped[expense.categoryID], sortedExpenses)}
+        }, {});
     };
-    groupCategories = categories => {
-        const { classes } = this.props;
-        const { grouped } = this.props.categories;
-        return categories.sort(function (a, b) {
-            if (a.location < b.location) {return -1}
-            if (a.location > b.location) {return 1}
-            return 0;
-        }).map(item => (
-            <List key={item._id} className = {classes.categoryList}>
-                <ListItem className = {classes.categoryList}>
-                    <Paper className={classes.categoryPaper}>
-                        <div className={classes.categoryItem}>
-                            <span className={classes.nameCategory} onClick={() => this.handleOpenName(item)}>{item.name}</span>
-                            <Modal open={this.state.openName} onClose={this.handleCloseName}>
-                                <div style={this.getModalStyle()} className={classes.paper}>
-                                    <Typography variant="title" id="modal-title">Edit category name</Typography>
-                                    <TextField
-                                        id="CategoryName"
-                                        label="Edit category name"
-                                        type="text"
-                                        className={classes.TextField}
-                                        margin="normal"
-                                        fullWidth
-                                        value={this.state.inputValueCategoryName}
-                                        onChange={this.getValueCategoryName}
-                                    />
-                                    <Button color="primary" className={classes.reportsButton} onClick={() => this.renameCat()}>SAVE</Button>
-                                </div>
-                            </Modal>
-                            <span>
-                            <Button color="info" onClick={() => this.moveCategory(item, "Up")}><ArrowUpward/></Button>
-                            <Button color="info" onClick={() => this.moveCategory(item, "Down")}><ArrowDownward/></Button>
-                            <Button color="warning" onClick={() => this.handleOpenDelete(item._id)}><Cancel/></Button>
-                            <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
-                                <div style={this.getModalStyle()} className={classes.paper}>
-                                    <Typography variant="title" id="modal-title">Do you really want to Delete this Category?</Typography>
-                                    <Typography variant="title" id="modal-title">{this.props.categories.categories[this.state.indexCategory] && this.props.categories.categories[this.state.indexCategory].name}</Typography>
-                                    <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
-                                    <Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>
-                                </div>
-                             </Modal>
-                            <Button color="info" onClick={() => this.handleOpenSubcategory(i)}>*</Button>
-                            </span>
-                        </div>
-                        {grouped[item._id] && this.groupCategories(grouped[item._id])}
-                    </Paper>
-                </ListItem>
-            </List>
-        ))
-    };
-
-
     render() {
-        console.log(this.props);
-        console.log(this.state.sortTimeCategory);
         const { classes } = this.props;
-        // const { categories } = this.props.categories;
+        const { expenses, grouped } = this.props.expenses;
+        let sortTime = expenses.filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod)
+        console.log(sortTime)
+        console.log(expenses)
         return (
             <div>
                 <Grid container>
@@ -243,81 +164,73 @@ class Reports extends React.Component {
                             <CardBody>
                                 <Grid container>
                                     <GridItem xs={4} sm={4} md={4}>
-                                        <h4>{(new Date(this.state.endPeriod)).toString().substring(0, 15)} / {new Date(this.state.startPeriod).toString().substring(0, 15)}</h4>
+                                        <h4>{(new Date(this.state.startPeriod)).toString().substring(0, 15)} / {new Date(this.state.endPeriod).toString().substring(0, 15)}</h4>
                                     </GridItem>
                                     <GridItem xs={8} sm={8} md={8}>
-                                        <Button color="primary" className={classes.reportsButton} onClick={this.prevPeriod}>
+                                        <Button color="primary" className={classes.reportsButton} onClick={() => this.changePeriod("prev")}>
                                             <KeyboardArrowLeft/>
                                         </Button>
-                                        <Button color="primary" className={classes.reportsButton} onClick={this.nextPeriod}>
+                                        <Button color="primary" className={classes.reportsButton} onClick={() => this.changePeriod("next")}>
                                             <KeyboardArrowRight/>
                                         </Button>
                                         <Button color="primary" className={classes.reportsButton} onClick={this.dayPeriod}>DAY</Button>
                                         <Button color="primary" className={classes.reportsButton} onClick={this.weekPeriod}>WEEK</Button>
                                         <Button color="primary" className={classes.reportsButton} onClick={this.monthPeriod}>MONTH</Button>
                                         <Button color="primary" className={classes.reportsButton} onClick={this.handleOpen}>PERIOD</Button>
-                                        <Modal
-
-                                            open={this.state.open}
-                                            onClose={this.handleClose}
-                                        >
+                                        <Modal open={this.state.open} onClose={this.handleClose}>
                                             <div style={this.getModalStyle()} className={classes.paper}>
-                                                <Typography variant="title" id="modal-title">Select a date period</Typography>
+                                                {
+                                                    this.state.startPeriod < this.state.endPeriod ?
+                                                        <div className={classes.modalTitle}>
+                                                            <Typography variant="title" id="modal-title">Select a date period</Typography>
+                                                        </div>
+                                                        :
+                                                        <div className={classes.modalTitle}>
+                                                        <Typography variant="title" id="modal-title">
+                                                            <span className={classes.modalTitleWarning}>Incorrect date period</span>
+                                                        </Typography>
+                                                        </div>
+                                                }
                                                 <form className={classes.container} noValidate>
                                                     <TextField
                                                         id="date"
-                                                        label=""
+                                                        label="from"
                                                         type="date"
-                                                        defaultValue="2017-05-24"
-                                                        className={classes.textField}
-                                                        InputLabelProps={{
-                                                            shrink: true,
-                                                        }}
+                                                        defaultValue={new Date(this.state.startPeriod+10800001).toISOString().substring(0, 10)}
+                                                        className={classes.modalField}
+                                                        InputLabelProps={{shrink: true,}}
                                                         onChange={this.calendarValuePrev}
                                                     />
                                                 </form>
                                                 <form className={classes.container} noValidate>
                                                     <TextField
                                                         id="date"
-                                                        label=""
+                                                        label="before"
                                                         type="date"
-                                                        defaultValue="2017-05-24"
-                                                        className={classes.textField}
-                                                        InputLabelProps={{
-                                                            shrink: true,
-                                                        }}
+                                                        defaultValue={new Date(this.state.endPeriod).toISOString().substring(0, 10)}
+                                                        className={classes.modalField}
+                                                        InputLabelProps={{shrink: true,}}
                                                         onChange={this.calendarValueNext}
                                                     />
                                                 </form>
-                                                <Button color="primary" className={classes.reportsButton} onClick={this.handleClose}>PERIOD</Button>
+                                                <div className={classes.modalButton}>
+                                                    <Button color="primary" className={classes.reportsButton} onClick={this.addPeriod}>SELECT PERIOD</Button>
+                                                </div>
                                             </div>
-
                                         </Modal>
                                     </GridItem>
                                 </Grid>
-                                <Table
-                                    tableHeaderColor="primary"
-                                    tableHead={["Category", "Expenses value,UAH"]}
-                                    tableData={[]}
-                                />
-                                <CardBody>
-                                    {
-                                        this.state.sortTimeCategory && this.state.sortTimeCategory.map((item, index) => {
-                                            return (
-                                                <div key={index}>
-                                                    <div className={classes.tableCategory}>
-                                                        <div className={classes.tableCategoryFont}>
-                                                            <span className={classes.nameCategory}>{item.name}</span>
-                                                            <span className={classes.tableCategoryUAH}>{item.valueUAH}</span>
-                                                        </div>
-                                                        {this.nextCubcategory(item)}
-                                                    </div>
-                                                    <hr />
-                                                </div>
-                                            )
-                                        })
-                                    }
-                                </CardBody>
+                                {
+                                    sortTime && sortTime.length>0 ?
+                                    <Table
+                                        tableHeaderColor="primary"
+                                        tableHead={["Category", "Expenses value, UAH"]}
+                                        tableData={grouped[0] && this.createExpList(grouped[0])}
+                                        sub={false}
+                                    />
+                                     :
+                                    <div className={classes.noExpenses}>No expenses in this period</div>
+                                }
                             </CardBody>
                         </Card>
                     </GridItem>
@@ -329,12 +242,10 @@ class Reports extends React.Component {
 
 const mapStateToProps = state => ({
     user: state.userData,
-    categories: state.categoriesList,
     expenses: state.expensesList
 });
 const mapDispatchToProps = dispatch => ({
-    categoriesUpdate: () => dispatch(categoriesUpdate()),
-    expensesUpdate: () => dispatch(expensesUpdate()),
+    expensesUpdate: () => dispatch(expensesUpdate())
 });
 Reports.propTypes = {
     classes: PropTypes.object.isRequired

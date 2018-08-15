@@ -50,6 +50,19 @@ const tableStyle = theme => ({
     padding: "12px 8px",
     verticalAlign: "middle"
   },
+    mainExp: {
+    ...defaultFont,
+    padding: "8px",
+    fontSize: '14px',
+    fontWeight: 'bold'
+  },
+    subExp: {
+    ...defaultFont
+    },
+    subExpUAH: {
+    ...defaultFont,
+    padding: "8px"
+    },
   tableResponsive: {
     width: "100%",
     marginTop: theme.spacing.unit * 3,
