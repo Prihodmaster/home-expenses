@@ -149,61 +149,15 @@ export const addExpenseOk = data => {
     }
 }
 
-
-
-export function addSubcategory(subcategory, indexCategory) {
+export const addSubcategory = (sub, id) => dispatch => {
+    axios.post('http://localhost:3001/sub', sub)
+        .then(function (response) {dispatch(addSubcategoryOk(response.data, id))})
+        .catch(function (error) {console.log(error)});
+}
+export const addSubcategoryOk = (data, id) => {
     return {
-        type: SUB_CATEGORIES_LIST,
-        index: indexCategory,
-        payload: subcategory
+        type: 'SUB_CATEGORIES_LIST',
+        payload: data,
+        sub: id,
     }
 }
-export function addCategoryName(categoryName, index) {
-    return {
-        type: ADD_CATEGORIE_NAME,
-        name: categoryName,
-        index: index
-    }
-}
-export function upSubCategory(index, swap) {
-    return {
-        type: UP_SUBCATEGORY,
-        index: index,
-        swap: swap
-    }
-}
-export function downSubCategory(index, swap) {
-    return {
-        type: DOWN_SUBCATEGORY,
-        index: index,
-        swap: swap
-    }
-}
-
-
-
-
-
-
-
-
-// получить массив с категориями с базы данных
-// axios.get('http://localhost:3001/expenses/')
-//     .then(function (response) {
-//         console.log(response);
-//     })
-//     .catch(function (error) {
-//         console.log(error);
-//     })
-//     .then(function () {
-//     });
-
-
-// axios.post('http://localhost:3001/expenses', category)
-//     .then(function (response) {
-//         response = response.data;
-//         console.log(response.data);
-//     })
-//     .catch(function (error) {
-//         console.log(error);
-//     });

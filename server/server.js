@@ -22,6 +22,7 @@ const categoriesSchema = mongoose.Schema({
     location: Number,
     parentID: String,
     children: Boolean,
+    isSub: Boolean,
     name: String
 
 });
@@ -58,7 +59,6 @@ app.get('/categories', (req, res) => {
         res.send(categories)
     });
 });
-
 app.post('/expenses', (req, res) => {
     let expense = new expenses (req.body);
     expense.save().then(item => res.send(item));
@@ -69,7 +69,6 @@ app.get('/expenses', (req, res) => {
         res.send(expenses)
     });
 });
-
 app.post('/signup', (req, res) => {
     users.findOne({email: req.body.email}, (err, user) => {
         if (err) {res.json({type: false, data: "Error occured: " + err})}
@@ -126,7 +125,6 @@ app.post('/signin', (req, res) => {
         }
     });
 });
-
 app.post('/categories/rename', (req, res) => {
     categories.findByIdAndUpdate(req.body.id, { name: req.body.name }, { new: true }, (err, category) => {
         if (err) throw err;
@@ -144,7 +142,11 @@ app.post('/categories/move', (req, res) => {
     categories.findByIdAndUpdate(req.body.swap._id, { location: req.body.current.location }, { new: true }, err => {if (err) throw err});
     res.json(req.body);
 });
-
+app.post('/sub', (req, res) => {
+    categories.findByIdAndUpdate(req.body.currentID, { isSub: true }, { new: true }, err => {if (err) throw err});
+    let category = new categories (req.body.change);
+    category.save().then(item => res.send(item));
+});
 
 
 app.use(bodyParser.urlencoded({ extended: true }));

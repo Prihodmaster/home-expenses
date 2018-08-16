@@ -26,23 +26,11 @@ class Dashboard extends React.Component {
         parent: "",
         category: []
     };
-
     componentDidMount = () => {
         if(!localStorage.getItem('token'))  this.props.history.push('/signin');
         this.props.categoriesUpdate();
         this.props.expensesUpdate();
     };
-    //Нужно решить проблему с отображением после выбора
-    // handleChangeCategory = () => e => {
-    //     let temp = [...this.props.categories.categories];
-    //     let current = _.findIndex(temp, i => i._id == e.target.value);
-    //     this.setState({
-    //         catName: temp[current].name,
-    //         // catName: e.target.value,
-    //         catID: e.target.value,
-    //         parent: temp[current].parentID
-    //     }, () => console.log(this.state))
-    // };
     handleChangeCategory = () => e => {
         this.setState({catName: e.target.value, catID: e.target.value})
     };
@@ -78,7 +66,6 @@ class Dashboard extends React.Component {
         // console.log(new Date().getTime())
         // console.log(Date.now())
     };
-
     render() {
         const { classes } = this.props;
         const { expenses } = this.props.expenses;
@@ -156,19 +143,24 @@ class Dashboard extends React.Component {
                                 <p className={classes.cardCategoryWhite}>Here is latest 20 expenses</p>
                             </CardHeader>
                             <CardBody>
-                                <Table
-                                    tableHeaderColor="primary"
-                                    tableHead={["Date", "Category", "Expenses", "Value, UAH"]}
-                                    tableData={
-                                        expenses ? expenses.sort(function (a, b) {
-                                        if (a.date > b.date) {return -1}
-                                        if (a.date < b.date) {return 1}
-                                        return 0;
-                                        }).slice(0, 20).map(item => {
-                                            return [item.date.substring(0, 15), item.name, item.description, item.valueUAH]
-                                        }): [["", "", "", ""]]
-                                    }
-                                />
+                                {
+                                    expenses && expenses.length>0 ?
+                                        <Table
+                                            tableHeaderColor="primary"
+                                            tableHead={["Date", "Category", "Expenses", "Value, UAH"]}
+                                            tableData={
+                                                expenses.sort(function (a, b) {
+                                                    if (a.date > b.date) {return -1}
+                                                    if (a.date < b.date) {return 1}
+                                                    return 0;
+                                                }).slice(0, 20).map(item => {
+                                                    return [item.date.substring(0, 15), item.name, item.description, item.valueUAH]
+                                                })
+                                            }
+                                        />
+                                        :
+                                        <div className={classes.noExpenses}>No expenses</div>
+                                }
                             </CardBody>
                         </Card>
                     </GridItem>

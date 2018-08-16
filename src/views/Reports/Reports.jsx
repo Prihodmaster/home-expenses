@@ -133,15 +133,16 @@ class Reports extends React.Component {
     };
     createExpList = expenses => {
         this.sortExpenses(expenses, sortedExpenses);
+        console.log("sortedExpenses  ", sortedExpenses);
         let x = sortedExpenses
-            .filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod)
             .map((i) => {return [i.name, i.valueUAH, i.parentID]});
         sortedExpenses.length = 0;
         return x;
     };
     sortExpenses = (expenses, sortedExpenses) => {
         const { grouped } = this.props.expenses;
-        return expenses.length && _.uniqBy(expenses, "categoryID").reduce((groups, expense) => {
+        let uniqArr = _.uniqBy(expenses, "categoryID").filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod);
+        return uniqArr.length && uniqArr.reduce((groups, expense) => {
             sortedExpenses.push(expense);
             if (grouped[expense.categoryID]) {this.sortExpenses(grouped[expense.categoryID], sortedExpenses)}
         }, {});
@@ -150,8 +151,9 @@ class Reports extends React.Component {
         const { classes } = this.props;
         const { expenses, grouped } = this.props.expenses;
         let sortTime = expenses.filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod)
-        console.log(sortTime)
-        console.log(expenses)
+        // console.log(sortTime)
+        // console.log(expenses)
+        // console.log(grouped)
         return (
             <div>
                 <Grid container>

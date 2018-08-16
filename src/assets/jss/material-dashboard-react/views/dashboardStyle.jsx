@@ -65,6 +65,11 @@ const dashboardStyle = {
       fontWeight: "400",
       lineHeight: "1"
     }
+  },
+  noExpenses: {
+      textAlign: "center",
+      fontWeight: 'bold',
+      padding: '10px'
   }
 };
 
