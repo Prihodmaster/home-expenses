@@ -1,5 +1,5 @@
 /* eslint-disable */
-import {RENAME_CATEGORY, CATEGORIES_LIST, MOVE_CATEGORY, DELETE_CATEGORY, UP_SUBCATEGORY, DOWN_SUBCATEGORY, SUB_CATEGORIES_LIST, CATEGORIES_UPDATE} from '../constants/constants'
+import {RENAME_CATEGORY, CATEGORIES_LIST, MOVE_CATEGORY, DELETE_CATEGORY, SUB_CATEGORIES_LIST, CATEGORIES_UPDATE, REMOVE_FROM_SUB} from '../constants/constants'
 
 function groupCategories(categories) {
     return categories.length && categories.reduce((groups, category) => {
@@ -24,6 +24,10 @@ export default function categories(state = {categories: [], grouped: []}, action
             return { ...state, categories: copy, grouped: rename};
         case DELETE_CATEGORY:
             let copyDel = [...state.categories];
+            copyDel.forEach(item => {
+                if(item.parentID===action.payload){item.parentID="0"; item.isSub=false}
+                action.arr.forEach(i => {if(item._id===i){item.isSub=false}})
+            });
             copyDel.splice(copyDel.findIndex((item) => item._id===action.payload), 1);
             let del = groupCategories(copyDel);
             return { ...state, categories: copyDel, grouped: del};
@@ -37,9 +41,18 @@ export default function categories(state = {categories: [], grouped: []}, action
             return { ...state, categories: copyUp, grouped: move};
         case SUB_CATEGORIES_LIST:
             let temp = [...state.categories, action.payload];
-            temp[temp.findIndex((item) => item._id===action.sub)].isSub = true;
+            temp[temp.findIndex((item) => item._id===action.payload.subFromID)].isSub = true;
             let change = groupCategories(temp);
-            return { ...state, categories: temp, grouped: change}
+            return { ...state, categories: temp, grouped: change};
+        case REMOVE_FROM_SUB:
+            let tempSub = [...state.categories];
+            let currentSub = tempSub.findIndex(item => item._id===action.payload._id);
+            let main = tempSub.findIndex(item => item._id===action.payload.subFromID);
+            tempSub[currentSub].isSub = false;
+            tempSub[currentSub].parentID = "0";
+            if(tempSub[main]){tempSub[main].isSub = false;}
+            let changeSub = groupCategories(tempSub);
+            return { ...state, categories: tempSub, grouped: changeSub};
         default:
             return state
     }

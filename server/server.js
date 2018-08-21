@@ -21,6 +21,7 @@ const categoriesSchema = mongoose.Schema({
     userID: String,
     location: Number,
     parentID: String,
+    subFromID: String,
     children: Boolean,
     isSub: Boolean,
     name: String
@@ -132,10 +133,16 @@ app.post('/categories/rename', (req, res) => {
     })
 });
 app.post('/categories/delete', (req, res) => {
+    if(req.body.arrSub.length>0){
+        req.body.arrSub.forEach(item => {
+            categories.findByIdAndUpdate(item, { isSub: false }, { new: true }, err => {if (err) throw err})
+        });
+    }
+    categories.updateMany({parentID: req.body.id}, { parentID: "0", isSub: false }, { new: true }, err => {if (err) throw err});
     categories.findOneAndRemove({_id: req.body.id}, (err, category) =>{
         if(err) return console.log(err);
         res.send(category._id)
-    })
+    });
 });
 app.post('/categories/move', (req, res) => {
     categories.findByIdAndUpdate(req.body.current._id, { location: req.body.swap.location }, { new: true }, err => {if (err) throw err});
@@ -143,11 +150,15 @@ app.post('/categories/move', (req, res) => {
     res.json(req.body);
 });
 app.post('/sub', (req, res) => {
-    categories.findByIdAndUpdate(req.body.currentID, { isSub: true }, { new: true }, err => {if (err) throw err});
-    let category = new categories (req.body.change);
+    categories.findByIdAndUpdate(req.body.subFromID, { isSub: true }, { new: true }, err => {if (err) throw err});
+    let category = new categories (req.body);
     category.save().then(item => res.send(item));
 });
-
+app.post('/sub/remove', (req, res) => {
+    categories.findByIdAndUpdate(req.body._id, { isSub: false, parentID: "0" }, { new: true }, err => {if (err) throw err});
+    categories.findByIdAndUpdate(req.body.subFromID, { isSub: false }, { new: true }, err => {if (err) throw err});
+    res.json(req.body);
+});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 MongoClient.connect(db, (err, database) => {

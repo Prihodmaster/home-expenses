@@ -47,12 +47,14 @@ const tableStyle = theme => ({
   tableCell: {
     ...defaultFont,
     lineHeight: "1.42857143",
+    maxWidth: "80px",
     padding: "12px 8px",
     verticalAlign: "middle"
   },
     mainExp: {
     ...defaultFont,
     padding: "8px",
+    maxWidth: "70px",
     fontSize: '14px',
     fontWeight: 'bold'
   },

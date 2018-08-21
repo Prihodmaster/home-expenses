@@ -16,7 +16,7 @@ import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import {List, ListItem, Paper} from "@material-ui/core";
 import {connect} from "react-redux";
-import {addCategory, renameCategory, moveCategory, deleteCategory, addSubcategory, categoriesUpdate} from "../../actions/UserActions";
+import {addCategory, renameCategory, moveCategory, deleteCategory, addSubcategory, categoriesUpdate, removeFromSub} from "../../actions/UserActions";
 import MenuItem from '@material-ui/core/MenuItem';
 import _ from 'lodash';
 
@@ -45,8 +45,10 @@ const styles = theme => ({
         margin: "0 0 0 20px",
         display: "inline-block",
         width: "30%",
-        height: "25px",
-        fontWeight: 'bold'
+        minHeight: "25px",
+        fontWeight: 'bold',
+        wordWrap: 'break-word',
+        verticalAlign: "middle"
     },
     nextCubcategory: {
         width: "24%",
@@ -108,6 +110,12 @@ const styles = theme => ({
     nameCatModal: {
         color: "red"
     },
+    scrollSub: {
+        overflowY: "auto",
+        overflowX: "hidden",
+        maxHeight: "200px",
+        margin: "15px auto"
+    },
     noCategories: {
         textAlign: "center",
         fontWeight: 'bold',
@@ -118,7 +126,8 @@ class Config extends React.Component {
     state = {
         category: [],
         grouped: [],
-        subCatList: [],
+        subList: [],
+        subListToAdd: [],
         openDelete: false,
         openName: false,
         openSubList: false,
@@ -131,6 +140,9 @@ class Config extends React.Component {
     componentDidMount = () => {
         if(!localStorage.getItem('token'))  this.props.history.push('/signin');
         this.props.categoriesUpdate();
+    };
+    componentWillReceiveProps = nextProps => {
+        this.setState({subListToAdd: [...nextProps.categories.categories].filter(i => i.parentID==="0" && i.isSub===false)});
     };
     getModalStyle = () => {
         const top = 50;
@@ -155,25 +167,26 @@ class Config extends React.Component {
             transform: `translate(-${top}%, -${left}%)`,
         };
     };
-    addCategory = () => {
-        let temp = [...this.props.categories.categories];
-        let maxLocate = temp.sort((a, b) => {
-            if ((a.parentID==="0" && a.location) > (b.parentID==="0" && b.location)) {return -1}
-            if ((a.parentID==="0" && a.location) < (b.parentID==="0" && b.location)) {return 1}
-            return 0;
-        });
+    maxLocate = () => {
+        let maxLocate = _.orderBy([...this.props.categories.categories], ['location'], ['desc']);
         let locate = maxLocate[0] ? maxLocate[0].location: 0;
         locate +=1;
-        this.setState({
-            category: {
-                userID: this.props.user.user._id,
-                location: locate,
-                parentID: "0",
-                children: false,
-                isSub: false,
-                name: locate
-            }
-        }, ()=>{this.props.addCategory(this.state.category)})
+        return locate
+    };
+    // minLocate = categories => {return _.orderBy(categories, ['location'], ['asc'])};
+    addCategory = () => {
+        // let x = _.sortBy([...this.props.categories.categories], [i => i.location]);//по возрастанию
+        // let maxLocate = _.orderBy([...this.props.categories.categories], ['location'], ['asc']);//по возрастанию
+        let category = {
+            userID: this.props.user.user._id,
+            location: this.maxLocate(),
+            parentID: "0",
+            subFromID: "",
+            children: false,
+            isSub: false,
+            name: this.maxLocate()
+        };
+        this.props.addCategory(category)
     };
     handleOpenDelete = item => {
         this.setState({
@@ -182,104 +195,64 @@ class Config extends React.Component {
             tempID: item._id
         });
     };
-    handleCloseDelete = () => {
-        this.setState({ openDelete: false });
-    };
+    handleCloseDelete = () => {this.setState({ openDelete: false })};
     deleteCategory = () => {
-        this.setState({openDelete: false}, () => {
-            this.props.deleteCategory({id: this.state.tempID});
-        })
+        const { grouped } = this.props.categories;
+        let arrSubFromID =[];
+        grouped[this.state.tempID] && _.forEach(grouped[this.state.tempID], item => arrSubFromID.push(item.subFromID));
+        this.setState({openDelete: false}, () => this.props.deleteCategory({id: this.state.tempID, arrSub: arrSubFromID}))
     };
-    handleOpenName = (item) => {
-        let current = _.findIndex(this.props.categories.categories, i => i._id == item._id);
+    handleOpenName = item => {
+        const { categories } = this.props.categories;
+        let current = _.findIndex(categories, i => i._id === item._id);
         this.setState({
             openName: true,
-            inputValueCategoryName: this.props.categories.categories[current].name,
+            inputValueCategoryName: categories[current].name,
             tempID: item._id
         });
     };
-    handleCloseName = () => {
-        this.setState({openName: false})
-    };
-    renameCat =() => {
+    handleCloseName = () => {this.setState({openName: false})};
+    renameCat = () => {
         this.setState({openName: false}, () => {
-            let rename = {
-                name: this.state.inputValueCategoryName,
-                id: this.state.tempID
-            };
-            this.props.renameCategory(rename);
+            this.props.renameCategory({name: this.state.inputValueCategoryName, id: this.state.tempID});
         })
     };
     moveCategory = (item, move) => {
         let temp = [...this.props.categories.grouped[item.parentID]];
-        let current = _.findIndex(temp, i => i._id == item._id);
+        let current = _.findIndex(temp, i => i._id === item._id);
         if(move==="Up"){
-            let swap = _.findLastIndex(temp, i => i.parentID==item.parentID, current - 1);
-            console.log(current)
-            console.log(swap)
-            if(swap < current && swap!== -1) {
-                console.log("сработало")
-                this.props.moveCategory({current: item, swap: temp[swap]})
-            }
+            let swap = _.findLastIndex(temp, i => i.parentID===item.parentID, current - 1);
+            if(swap < current && swap!== -1) {this.props.moveCategory({current: item, swap: temp[swap]})}
         }
         if(move==="Down"){
-            let swap = _.findIndex(temp, i => i.parentID==item.parentID, current + 1);
-            console.log(current)
-            console.log(swap)
-            if(swap > current && swap!== -1) {
-                console.log("сработало")
-                this.props.moveCategory({current: item, swap: temp[swap]})
-            }
+            let swap = _.findIndex(temp, i => i.parentID===item.parentID, current + 1);
+            if(swap > current && swap!== -1) {this.props.moveCategory({current: item, swap: temp[swap]})}
         }
     };
-    handleOpenSub = (item) => {
-        let listSub = _.pull([...this.props.categories.categories], item).filter(i => i.parentID==="0" && i.isSub===false);
-        this.setState({
-            openSubList: true,
-            tempID: item._id,
-            subCatList: listSub
-        });
-    };
+    handleOpenSub = item => {this.setState({openSubList: true, tempID: item._id})};
     handleCloseSub = () => {this.setState({openSubList: false})};
     handleChangeCategory = () => e => {this.setState({subID: e.target.value})};
-    getValueCategoryName = (e) => {
-        this.setState({inputValueCategoryName: e.target.value});
-    };
+    getValueCategoryName = e => {this.setState({inputValueCategoryName: e.target.value})};
     addSubcategory = () => {
-        const { tempID, subID, subCatList } = this.state;
-        let temp = [...this.props.categories.categories];
-        let maxLocate = temp.sort((a, b) => {
-            if ((a.parentID===tempID && a.location) > (b.parentID===tempID && b.location)) {return -1}
-            if ((a.parentID===tempID && a.location) < (b.parentID===tempID && b.location)) {return 1}
-            return 0;
-        });
-        let locate = maxLocate[0] ? maxLocate[0].location: 0;
-        locate +=1;
-        let current = _.findIndex(subCatList, i => i._id === subID);
-        let sub = {
-            change: {
+        const { tempID, subID, subListToAdd } = this.state;
+        let current = _.findIndex(subListToAdd, i => i._id === subID);
+        if(subListToAdd.length>0 && current!==-1){
+            let sub = {
                 userID: this.props.user.user._id,
-                location: locate,
+                location: this.maxLocate(),
                 parentID: tempID,
+                subFromID: subID,
                 children: false,
                 isSub: true,
-                name: subCatList[current].name
-            },
-            currentID: subID
-        };
-        this.setState({openSubList: false});
-        this.props.addSubcategory(sub, subID);
+                name: subListToAdd[current].name
+            };
+            this.props.addSubcategory(sub);
+        }
     };
-    group = categories => {
-        return categories.length && categories.reduce((grouped, category) => {
-            if (!grouped[category.parentID]) {grouped[category.parentID] = []}
-            grouped[category.parentID].push(category);
-            return grouped;
-        }, {})
-    };
+    removeFromSub = item => {this.props.removeFromSub(item)};
     groupCategories = categories => {
         const { classes } = this.props;
-        const { subCatList } = this.state;
+        const { subListToAdd, tempID } = this.state;
         const { grouped } = this.props.categories;
         return categories.sort(function (a, b) {
             if (a.location < b.location) {return -1}
@@ -310,7 +283,7 @@ class Config extends React.Component {
                             <span>
                             <Button color="info" onClick={() => this.moveCategory(item, "Up")}><ArrowUpward/></Button>
                             <Button color="info" onClick={() => this.moveCategory(item, "Down")}><ArrowDownward/></Button>
-                            <Button color="warning" onClick={() => this.handleOpenDelete(item)}><Cancel/></Button>
+                            <Button color="warning" onClick={() => item.parentID==="0" ? this.handleOpenDelete(item): this.removeFromSub(item)}><Cancel/></Button>
                             <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
                                 <div style={this.getModalStyle()} className={classes.paper}>
                                     <Typography variant="title" id="modal-title">Do you really want to Delete this Category:
@@ -328,6 +301,16 @@ class Config extends React.Component {
                                 <div style={this.getModalStyleSub()} className={classes.paper}>
                                     <Cancel className={classes.Cancel} onClick={() => this.handleCloseSub()}/>
                                     <Typography variant="title" id="modal-title">Subcategories list</Typography>
+                                    {
+                                        grouped[tempID] && grouped[tempID].length>0 ?
+                                            <div className={classes.scrollSub}>
+                                                <List className = {classes.categoryList}>
+                                                    {this.groupSub(grouped[tempID])}
+                                                </List>
+                                            </div>
+                                            :
+                                            <div className={classes.noCategories}>No subcategories</div>
+                                    }
                                     <TextField
                                         id="select-category"
                                         select
@@ -340,7 +323,7 @@ class Config extends React.Component {
                                         margin="normal"
                                     >
                                         {
-                                            subCatList && subCatList.map((item, i) => (
+                                            subListToAdd && subListToAdd.map((item, i) => (
                                                 <MenuItem key={i} value={item._id}>
                                                     {item.name}
                                                 </MenuItem>
@@ -358,8 +341,33 @@ class Config extends React.Component {
             </List>
         ))
     };
+    groupSub = categories => {
+        const { classes } = this.props;
+        const { grouped } = this.props.categories;
+        return categories.sort(function (a, b) {
+            if (a.location < b.location) {return -1}
+            if (a.location > b.location) {return 1}
+            return 0;
+        }).map(item => (
+            <List key={item._id} className = {classes.categoryList}>
+                <ListItem className = {classes.categoryList}>
+                    <Paper className={classes.categoryPaper}>
+                        <div className={classes.categoryItem}>
+                            <span className={classes.nameCategory}>{item.name}</span>
+                            <span>
+                                <Button color="info" onClick={() => this.moveCategory(item, "Up")}><ArrowUpward/></Button>
+                                <Button color="info" onClick={() => this.moveCategory(item, "Down")}><ArrowDownward/></Button>
+                                <Button color="warning" onClick={() => this.removeFromSub(item)}><Cancel/></Button>
+                            </span>
+                        </div>
+                        {grouped[item._id] && this.groupSub(grouped[item._id])}
+                    </Paper>
+                </ListItem>
+            </List>
+        ))
+    };
     render() {
-        const { categories, grouped } = this.props.categories;
+        const { grouped } = this.props.categories;
         const { classes } = this.props;
         console.log(this.props.categories);
         return (
@@ -375,7 +383,7 @@ class Config extends React.Component {
                                 {
                                     grouped[0] && grouped[0].length>0 ?
                                         <List className = {classes.categoryList}>
-                                            {grouped[0] && this.groupCategories(grouped[0])}
+                                            {this.groupCategories(grouped[0])}
                                         </List>
                                         :
                                         <div className={classes.noCategories}>No categories</div>
@@ -398,9 +406,10 @@ const mapDispatchToProps = dispatch => ({
     categoriesUpdate: () => dispatch(categoriesUpdate()),
     addCategory: (category) => dispatch(addCategory(category)),
     renameCategory: (rename) => dispatch(renameCategory(rename)),
-    addSubcategory: (sub, id) => dispatch(addSubcategory(sub, id)),
+    addSubcategory: (sub) => dispatch(addSubcategory(sub)),
     moveCategory: (data) => dispatch(moveCategory(data)),
-    deleteCategory: (del) => dispatch(deleteCategory(del))
+    deleteCategory: (del) => dispatch(deleteCategory(del)),
+    removeFromSub: (sub) => dispatch(removeFromSub(sub))
 });
 Config.propTypes = {
     classes: PropTypes.object.isRequired

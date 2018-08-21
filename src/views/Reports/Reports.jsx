@@ -18,6 +18,11 @@ import {connect} from "react-redux";
 import { expensesUpdate } from "../../actions/UserActions";
 import _ from 'lodash';
 
+
+// _.groupBy(['one', 'two', 'three'], 'length');
+// => { '3': ['one', 'two'], '5': ['three'] }
+
+
 const styles = theme => ({
     paper: {
         position: 'absolute',
@@ -70,11 +75,14 @@ const styles = theme => ({
     modalTitleWarning: {
         color: "red"
     },
+    reportsTitle: {
+        width: "103%"
+    },
 });
 const Day = 86400000;
 const Week = 604800000;
 const Month = 2592000000;
-const sortedExpenses = [];
+// const sortedExpenses = [];
 class Reports extends React.Component {
     state = {
             Interval: Day,
@@ -98,17 +106,12 @@ class Reports extends React.Component {
         };
     };
     changePeriod = change => {
+        const { startPeriod, endPeriod, Interval } = this.state;
         if(change==="prev"){
-            this.setState({
-                startPeriod: this.state.startPeriod - this.state.Interval,
-                endPeriod: this.state.endPeriod - this.state.Interval
-            })
+            this.setState({startPeriod: startPeriod - Interval, endPeriod: endPeriod - Interval})
         }
         if(change==="next"){
-            this.setState({
-                startPeriod: this.state.startPeriod + this.state.Interval,
-                endPeriod: this.state.endPeriod + this.state.Interval
-            })
+            this.setState({startPeriod: startPeriod + Interval, endPeriod: endPeriod + Interval})
         }
     };
     dayPeriod = () => {this.setState({Interval: Day})};
@@ -131,29 +134,71 @@ class Reports extends React.Component {
     addPeriod = () => {
         this.state.startPeriod < this.state.endPeriod && this.setState({open: false})
     };
+    // createExpList = expenses => {
+    //     this.sortExpenses(expenses, sortedExpenses);
+    //     console.log(sortedExpenses)
+    //     console.log(rez)
+    //     let forTable = sortedExpenses.map((i) => {return [i.name, i.valueUAH, i.parentID]});
+    //     sortedExpenses.length = 0;
+    //     return forTable;
+    // };
     createExpList = expenses => {
+        let sortedExpenses = [];
         this.sortExpenses(expenses, sortedExpenses);
-        console.log("sortedExpenses  ", sortedExpenses);
-        let x = sortedExpenses
-            .map((i) => {return [i.name, i.valueUAH, i.parentID]});
-        sortedExpenses.length = 0;
-        return x;
+
+
+        // _.forEachRight(sortedExpenses, item => {
+        //     _.forEachRight(sortedExpenses, i => {
+        //         if(item.categoryID===i.parentID){item.valueUAH = Number(item.valueUAH) + Number(i.valueUAH)}
+        //     })
+        // });
+
+
+
+        console.log("sortedExpenses", sortedExpenses)
+        // let forTable = sortedExpenses.map((i) => {return [i.name, String(i.valueUAH), i.parentID]});
+        // console.log("forTable", forTable)
+        // return forTable;
+        return sortedExpenses.map((i) => {return [i.name, String(i.valueUAH), i.parentID]});
+        // return sortedExpenses.map((i) => {
+        //     let x = 0;
+        //     _.forEachRight(sortedExpenses, item => {if(i.categoryID===item.parentID){x += Number(item.valueUAH)}})
+        //     console.log(x)
+        //     return [i.name, String(x+Number(i.valueUAH)), i.parentID]
+        // });
     };
     sortExpenses = (expenses, sortedExpenses) => {
         const { grouped } = this.props.expenses;
-        let uniqArr = _.uniqBy(expenses, "categoryID").filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod);
+        const { startPeriod, endPeriod } = this.state;
+        let uniqArr = _.uniqBy([...expenses.filter(i => i.millisecDate >= startPeriod && i.millisecDate <= endPeriod)].reverse(), "categoryID");
         return uniqArr.length && uniqArr.reduce((groups, expense) => {
             sortedExpenses.push(expense);
             if (grouped[expense.categoryID]) {this.sortExpenses(grouped[expense.categoryID], sortedExpenses)}
         }, {});
     };
+    // sortExpenses = (expenses, sortedExpenses) => {
+    //     let y = 0;
+    //     const { grouped } = this.props.expenses;
+    //     const { startPeriod, endPeriod } = this.state;
+    //     let uniqArr = _.uniqBy([...expenses.filter(i => i.millisecDate >= startPeriod && i.millisecDate <= endPeriod)].reverse(), "categoryID");
+    //     return uniqArr.length && uniqArr.reduce((groups, expense) => {
+    //         // rez.push(expense);
+    //         sortedExpenses.push(expense);
+    //         if (grouped[expense.categoryID]) {
+    //             _.uniqBy([...grouped[expense.categoryID].filter(i => i.millisecDate >= startPeriod && i.millisecDate <= endPeriod)].reverse(), "categoryID").forEach(
+    //                 item => {
+    //                     rez.push(item.valueUAH)
+    //                 }
+    //             )
+    //             this.sortExpenses(grouped[expense.categoryID], sortedExpenses)
+    //         }
+    //     }, {});
+    // };
     render() {
         const { classes } = this.props;
         const { expenses, grouped } = this.props.expenses;
-        let sortTime = expenses.filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod)
-        // console.log(sortTime)
-        // console.log(expenses)
-        // console.log(grouped)
+        console.log(grouped)
+        let sortTime = expenses.filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod);
         return (
             <div>
                 <Grid container>
@@ -166,7 +211,7 @@ class Reports extends React.Component {
                             <CardBody>
                                 <Grid container>
                                     <GridItem xs={4} sm={4} md={4}>
-                                        <h4>{(new Date(this.state.startPeriod)).toString().substring(0, 15)} / {new Date(this.state.endPeriod).toString().substring(0, 15)}</h4>
+                                        <h4 className={classes.reportsTitle}>{(new Date(this.state.startPeriod)).toString().substring(0, 15)} / {new Date(this.state.endPeriod).toString().substring(0, 15)}</h4>
                                     </GridItem>
                                     <GridItem xs={8} sm={8} md={8}>
                                         <Button color="primary" className={classes.reportsButton} onClick={() => this.changePeriod("prev")}>

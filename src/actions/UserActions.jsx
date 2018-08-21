@@ -4,14 +4,13 @@ import {
     RENAME_CATEGORY,
     MOVE_CATEGORY,
     DELETE_CATEGORY,
-    UP_SUBCATEGORY,
-    DOWN_SUBCATEGORY,
     SIGN_UP,
     SIGN_IN,
     SIGN_OUT,
     SUB_CATEGORIES_LIST,
     EXPENSES_LIST,
     EXPENSES_UPDATE,
+    REMOVE_FROM_SUB,
     CATEGORIES_UPDATE
 } from '../constants/constants';
 import axios from 'axios';
@@ -101,16 +100,14 @@ export const renameCategoryOk = data => {
 
 export const deleteCategory = del => dispatch => {
     axios.post('http://localhost:3001/categories/delete', del)
-        .then(function (response) {
-            console.log(response.data);
-            dispatch(deleteCategoryOk(response.data))
-        })
+        .then(function (response) {dispatch(deleteCategoryOk(response.data, del.arrSub))})
         .catch(function (error) {console.log(error)});
 }
-export const deleteCategoryOk = data => {
+export const deleteCategoryOk = (data, arr) => {
     return {
         type: 'DELETE_CATEGORY',
-        payload: data
+        payload: data,
+        arr: arr,
     }
 }
 
@@ -139,7 +136,7 @@ export const expensesUpdateOk = data => {
 };
 export const addExpense = data => dispatch => {
     axios.post('http://localhost:3001/expenses', data)
-        .then( response => dispatch(addExpenseOk(response.data)))
+        .then(response => dispatch(addExpenseOk(response.data)))
         .catch(error => console.log(error));
 }
 export const addExpenseOk = data => {
@@ -149,15 +146,26 @@ export const addExpenseOk = data => {
     }
 }
 
-export const addSubcategory = (sub, id) => dispatch => {
+export const addSubcategory = sub => dispatch => {
     axios.post('http://localhost:3001/sub', sub)
-        .then(function (response) {dispatch(addSubcategoryOk(response.data, id))})
-        .catch(function (error) {console.log(error)});
+        .then(response => dispatch(addSubcategoryOk(response.data)))
+        .catch(error => console.log(error));
 }
-export const addSubcategoryOk = (data, id) => {
+export const addSubcategoryOk = data => {
     return {
         type: 'SUB_CATEGORIES_LIST',
-        payload: data,
-        sub: id,
+        payload: data
+    }
+}
+
+export const removeFromSub = sub => dispatch => {
+    axios.post('http://localhost:3001/sub/remove', sub)
+        .then(response => dispatch(removeFromSubOk(response.data)))
+        .catch(error => console.log(error));
+}
+export const removeFromSubOk = data => {
+    return {
+        type: 'REMOVE_FROM_SUB',
+        payload: data
     }
 }
