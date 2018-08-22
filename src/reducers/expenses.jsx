@@ -7,15 +7,22 @@ function groupExpenses(categories) {
         return groups
     }, {});
 }
-export default function expenses(state = {expenses: [], grouped: []}, action) {
+function groupDesc(categories) {
+    return categories.length && categories.map(item => {
+        return {label: item.description.toLowerCase()}
+    })
+}
+export default function expenses(state = {expenses: [], grouped: [], desclist: []}, action) {
     switch (action.type) {
         case EXPENSES_LIST:
             let Exp = [...state.expenses, action.payload];
             let groups = groupExpenses(Exp);
-            return { ...state, expenses: [...state.expenses, action.payload], grouped: groups};
+            let descAdd = groupDesc(Exp);
+            return { ...state, expenses: [...state.expenses, action.payload], grouped: groups, desclist: descAdd};
         case EXPENSES_UPDATE:
             let update = groupExpenses(action.payload);
-            return { ...state, expenses:  action.payload, grouped: update};
+            let descUpdate = groupDesc(action.payload);
+            return { ...state, expenses:  action.payload, grouped: update, desclist: descUpdate};
         default:
             return state
     }

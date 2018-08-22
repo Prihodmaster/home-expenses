@@ -58,13 +58,13 @@ const tableStyle = theme => ({
     fontSize: '14px',
     fontWeight: 'bold'
   },
-    subExp: {
-    ...defaultFont
-    },
-    subExpUAH: {
-    ...defaultFont,
-    padding: "8px"
-    },
+  subExp: {
+  ...defaultFont
+  },
+  subExpUAH: {
+  ...defaultFont,
+  padding: "8px"
+  },
   tableResponsive: {
     width: "100%",
     marginTop: theme.spacing.unit * 3,

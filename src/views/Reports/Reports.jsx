@@ -33,7 +33,7 @@ const styles = theme => ({
     },
     reportsButton: {
         padding: "10px 10px",
-        margin: "20px 15px"
+        margin: "20px 0 0 30px"
     },
     container: {
         display: 'inline-block',
@@ -85,10 +85,11 @@ const Month = 2592000000;
 // const sortedExpenses = [];
 class Reports extends React.Component {
     state = {
-            Interval: Day,
-            startPeriod: new Date().setHours(0, 0, 0, 1) - Day,
-            endPeriod: new Date().setHours(23, 59, 59, 999) + Day,
-            open: false
+        Interval: Day,
+        startPeriod: new Date().setHours(0, 0, 0, 1) - Day,
+        endPeriod: new Date().setHours(23, 59, 59, 999) + Day,
+        open: false,
+        sortedExpenses: []
         };
     componentDidMount = () => {
         if(!localStorage.getItem('token'))  this.props.history.push('/signin');
@@ -117,12 +118,8 @@ class Reports extends React.Component {
     dayPeriod = () => {this.setState({Interval: Day})};
     weekPeriod = () => {this.setState({Interval: Week})};
     monthPeriod = () => {this.setState({Interval: Month})};
-    calendarValuePrev = (e) => {
-        this.setState({startPeriod: Date.parse(e.target.value)-10799999})
-    };
-    calendarValueNext = (e) => {
-        this.setState({endPeriod: Date.parse(e.target.value)+75599999})
-    };
+    calendarValuePrev = e => {this.setState({startPeriod: Date.parse(e.target.value)-10799999})};
+    calendarValueNext = e => {this.setState({endPeriod: Date.parse(e.target.value)+75599999})};
     handleOpen = () => {this.setState({open: true})};
     handleClose = () => {
         this.state.startPeriod > this.state.endPeriod ? this.setState({
@@ -131,34 +128,15 @@ class Reports extends React.Component {
             endPeriod: new Date().setHours(23, 59, 59, 999) + Day
         }): this.setState({open: false})
     };
-    addPeriod = () => {
-        this.state.startPeriod < this.state.endPeriod && this.setState({open: false})
-    };
-    // createExpList = expenses => {
-    //     this.sortExpenses(expenses, sortedExpenses);
-    //     console.log(sortedExpenses)
-    //     console.log(rez)
-    //     let forTable = sortedExpenses.map((i) => {return [i.name, i.valueUAH, i.parentID]});
-    //     sortedExpenses.length = 0;
-    //     return forTable;
-    // };
+    addPeriod = () => {this.state.startPeriod < this.state.endPeriod && this.setState({open: false})};
     createExpList = expenses => {
         let sortedExpenses = [];
         this.sortExpenses(expenses, sortedExpenses);
-
-
-        // _.forEachRight(sortedExpenses, item => {
-        //     _.forEachRight(sortedExpenses, i => {
-        //         if(item.categoryID===i.parentID){item.valueUAH = Number(item.valueUAH) + Number(i.valueUAH)}
-        //     })
-        // });
-
-
-
-        console.log("sortedExpenses", sortedExpenses)
-        // let forTable = sortedExpenses.map((i) => {return [i.name, String(i.valueUAH), i.parentID]});
-        // console.log("forTable", forTable)
-        // return forTable;
+        _.forEachRight(sortedExpenses, item => {
+            _.forEachRight(sortedExpenses, i => {
+                if(item.categoryID===i.parentID){item.valueUAH = Number(item.valueUAH) + Number(i.valueUAH)}
+            })
+        });
         return sortedExpenses.map((i) => {return [i.name, String(i.valueUAH), i.parentID]});
         // return sortedExpenses.map((i) => {
         //     let x = 0;
@@ -176,28 +154,11 @@ class Reports extends React.Component {
             if (grouped[expense.categoryID]) {this.sortExpenses(grouped[expense.categoryID], sortedExpenses)}
         }, {});
     };
-    // sortExpenses = (expenses, sortedExpenses) => {
-    //     let y = 0;
-    //     const { grouped } = this.props.expenses;
-    //     const { startPeriod, endPeriod } = this.state;
-    //     let uniqArr = _.uniqBy([...expenses.filter(i => i.millisecDate >= startPeriod && i.millisecDate <= endPeriod)].reverse(), "categoryID");
-    //     return uniqArr.length && uniqArr.reduce((groups, expense) => {
-    //         // rez.push(expense);
-    //         sortedExpenses.push(expense);
-    //         if (grouped[expense.categoryID]) {
-    //             _.uniqBy([...grouped[expense.categoryID].filter(i => i.millisecDate >= startPeriod && i.millisecDate <= endPeriod)].reverse(), "categoryID").forEach(
-    //                 item => {
-    //                     rez.push(item.valueUAH)
-    //                 }
-    //             )
-    //             this.sortExpenses(grouped[expense.categoryID], sortedExpenses)
-    //         }
-    //     }, {});
-    // };
     render() {
         const { classes } = this.props;
         const { expenses, grouped } = this.props.expenses;
-        console.log(grouped)
+        console.log("grouped", grouped)
+        console.log("this.state", this.state)
         let sortTime = expenses.filter(i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod);
         return (
             <div>
@@ -268,7 +229,7 @@ class Reports extends React.Component {
                                     </GridItem>
                                 </Grid>
                                 {
-                                    sortTime && sortTime.length>0 ?
+                                    sortTime && sortTime.length>0 && grouped[0] ?
                                     <Table
                                         tableHeaderColor="primary"
                                         tableHead={["Category", "Expenses value, UAH"]}

@@ -173,7 +173,6 @@ class Config extends React.Component {
         locate +=1;
         return locate
     };
-    // minLocate = categories => {return _.orderBy(categories, ['location'], ['asc'])};
     addCategory = () => {
         // let x = _.sortBy([...this.props.categories.categories], [i => i.location]);//по возрастанию
         // let maxLocate = _.orderBy([...this.props.categories.categories], ['location'], ['asc']);//по возрастанию

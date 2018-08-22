@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from "react";
 import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
@@ -10,11 +9,13 @@ import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
 import Button from "components/CustomButtons/Button.jsx";
+import IntegrationAutosuggest from "components/Autocomplete/IntegrationAutosuggest.jsx"
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 import {connect} from "react-redux";
 import {addExpense, expensesUpdate, categoriesUpdate} from "../../actions/UserActions";
+import _ from 'lodash';
 
 class Dashboard extends React.Component {
     state = {
@@ -24,6 +25,7 @@ class Dashboard extends React.Component {
         inputValueUAH: "",
         catID: "",
         parent: "",
+        clear: false,
         category: []
     };
     componentDidMount = () => {
@@ -32,39 +34,32 @@ class Dashboard extends React.Component {
         this.props.expensesUpdate();
     };
     handleChangeCategory = () => e => {
-        this.setState({catName: e.target.value, catID: e.target.value})
+        this.setState({catName: e.target.value, clear: false})
     };
-    getValueDescription = (e) => {
-        this.setState({inputValueDescription: e.target.value});
-    };
-    getValueUAH = (e) => {
-        e.target.value = e.target.value.replace(/[^0-9.]/g, '');
-        this.setState({inputValueUAH: e.target.value});
+    getValueUAH = e => {
+        if(e.target.value[0]==="0" || e.target.value[0]==="."){e.target.value = ""}
+        e.target.value = e.target.value.replace(/[^\d.]*/g, '').replace(/([.])+/g, '$1').replace(/^[^\d]*(\d+([.]\d{0,2})?).*$/g, '$1');
+        this.setState({inputValueUAH: e.target.value, clear: false});
     };
     newExpense = () => {
+        let data = document.querySelectorAll('input');
         let temp = [...this.props.categories.categories];
-        let current = _.findIndex(temp, i => i._id == this.state.catID);
-        if(this.state.catName!=="" && this.state.inputValueUAH!==""){
+        let current = _.findIndex(temp, i => i._id === data[0].value);
+        if(data[0].value!=="" && data[2].value!==""){
             let expense = {
                 date: new Date().toString(),
                 name: temp[current].name,
                 millisecDate: Date.now(),
-                categoryID: this.state.catID,
+                categoryID: data[0].value,
                 parentID: temp[current].parentID,
                 userID: this.props.user.user._id,
-                description: this.state.inputValueDescription,
-                valueUAH: this.state.inputValueUAH,
+                description: data[1].value,
+                valueUAH: data[2].value
             };
-            console.log(expense)
             this.props.addExpense(expense);
-            this.setState({
-                catName: "",
-                inputValueDescription: "",
-                inputValueUAH: "",
-            });
-        }
-        // console.log(new Date().getTime())
-        // console.log(Date.now())
+            this.setState({catName: "", inputValueUAH: ""});
+        }else alert("Please select category and/or enter value")
+        this.setState({clear: true})
     };
     render() {
         const { classes } = this.props;
@@ -94,7 +89,7 @@ class Dashboard extends React.Component {
                                             margin="normal"
                                         >
                                             {
-                                                categories && categories.map((item, i) => (
+                                                categories && _.orderBy(categories, ['name'], ['asc']).map((item, i) => (
                                                     <MenuItem key={i} value={item._id}>
                                                         {item.name}
                                                     </MenuItem>
@@ -103,15 +98,9 @@ class Dashboard extends React.Component {
                                         </TextField>
                                     </GridItem>
                                     <GridItem xs={3} sm={3} md={3}>
-                                        <TextField
-                                            id="Description"
-                                            label="Description"
-                                            type="search"
-                                            className={classes.TextField}
-                                            margin="normal"
-                                            fullWidth
-                                            value={this.state.inputValueDescription}
-                                            onChange={this.getValueDescription}
+                                        <IntegrationAutosuggest
+                                            clear={this.state.clear}
+                                            desclist={_.orderBy(_.uniqBy([...this.props.expenses.desclist], "label"), ['label'], ['asc'])}
                                         />
                                     </GridItem>
                                     <GridItem xs={3} sm={3} md={3}>
@@ -138,28 +127,24 @@ class Dashboard extends React.Component {
                     </GridItem>
                     <GridItem xs={12} sm={12} md={12}>
                         <Card>
-                            <CardHeader color="info">
+                            <CardHeader color="info" className={classes.cardTitleWhite}>
                                 <h4 className={classes.cardTitleWhite}>Latest expenses</h4>
                                 <p className={classes.cardCategoryWhite}>Here is latest 20 expenses</p>
                             </CardHeader>
                             <CardBody>
                                 {
                                     expenses && expenses.length>0 ?
-                                        <Table
-                                            tableHeaderColor="primary"
-                                            tableHead={["Date", "Category", "Expenses", "Value, UAH"]}
-                                            tableData={
-                                                expenses.sort(function (a, b) {
-                                                    if (a.date > b.date) {return -1}
-                                                    if (a.date < b.date) {return 1}
-                                                    return 0;
-                                                }).slice(0, 20).map(item => {
-                                                    return [item.date.substring(0, 15), item.name, item.description, item.valueUAH]
-                                                })
-                                            }
-                                        />
-                                        :
-                                        <div className={classes.noExpenses}>No expenses</div>
+                                    <Table
+                                        tableHeaderColor="primary"
+                                        tableHead={["Date", "Category", "Expenses", "Value, UAH"]}
+                                        tableData={
+                                            _.orderBy(expenses, ['millisecDate'], ['desc']).slice(0, 20).map(item => {
+                                                return [item.date.substring(0, 15), item.name, item.description, item.valueUAH]
+                                            })
+                                        }
+                                    />
+                                    :
+                                    <div className={classes.noExpenses}>No expenses</div>
                                 }
                             </CardBody>
                         </Card>

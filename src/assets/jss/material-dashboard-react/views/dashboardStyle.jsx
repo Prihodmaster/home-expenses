@@ -32,6 +32,7 @@ const dashboardStyle = {
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
     margin: "0",
+    zIndex: "0!important",
     fontSize: "14px",
     marginTop: "0",
     marginBottom: "0"
@@ -53,6 +54,7 @@ const dashboardStyle = {
   },
   cardTitleWhite: {
     color: "#FFFFFF",
+    zIndex: "0!important",
     marginTop: "0px",
     minHeight: "auto",
     fontWeight: "300",
