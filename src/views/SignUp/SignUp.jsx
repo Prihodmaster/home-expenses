@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Grid from "@material-ui/core/Grid";
@@ -47,46 +46,41 @@ const styles = {
         color: "#9c28b0"
     }
 };
-
 class SignUp extends React.Component {
+    state = {
+        email: '',
+        password: '',
+        rePassword: ''
+    };
     componentDidMount = () => {
         if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
     };
-    state = {
-        inputValueEmail: '',
-        inputValuePassword: '',
-        inputValueRepeatPassword: ''
+    getValueEmail = e => {
+        this.setState({email: e.target.value});
     };
-
-// validate = (form_id,email) => {
-//     let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-//     let address = document.forms[form_id].elements[email].value;
-//     if(reg.test(address) == false) {
-//         alert('Введите корректный e-mail');
-//         return false;
-//     }
-    getValueEmail = (e) => {
-        this.setState({inputValueEmail: e.target.value});
-    }
-    getValuePassword = (e) => {
-        this.setState({inputValuePassword: e.target.value});
-    }
-    getValueRepeatPassword = (e) => {
-        this.setState({inputValueRepeatPassword: e.target.value});
-    }
+    getValuePassword = e => {
+        this.setState({password: e.target.value});
+    };
+    getValueRepeatPassword = e => {
+        this.setState({rePassword: e.target.value});
+    };
     signUp = () => {
-        if(this.state.inputValuePassword === this.state.inputValueRepeatPassword){
-            let newUser = {
-                email: this.state.inputValueEmail,
-                password: this.state.inputValuePassword,
-                verified: false
-            };
-            this.props.signUp(newUser)
-        } else alert("Passwords do not match");
+        const { email, password, rePassword } = this.state;
+        let validate = /^[a-zA-z0-9_.]{1,30}@{1,}[a-z]{3,10}\.{1}[a-z]{2,9}(.[a-z]{2,3}|)$/gm;
+        if(validate.test(email)){
+            if(password === rePassword){
+                if(password!=="" || rePassword!==""){
+                    let newUser = {
+                        email: email,
+                        password: password,
+                        verified: false
+                    };
+                    this.props.signUp(newUser)
+                }else alert("Enter password")
+            }else alert("Passwords do not match")
+        }else alert("Incorrect email")
     };
-
     render() {
-        console.log(this.props);
         const { classes } = this.props;
         return (
             <div>
@@ -99,40 +93,40 @@ class SignUp extends React.Component {
                             </CardHeader>
                             <CardBody>
                                 <Grid container>
-                                    <GridItem xs={12} sm={12} md={6}>
+                                    <GridItem xs={12} sm={6} md={6}>
                                         <TextField
                                             id="email-address"
                                             label="Email address"
                                             type="text"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
-                                            value={this.state.inputValueEmail}
+                                            value={this.state.email}
                                             onChange={this.getValueEmail}
                                         />
                                     </GridItem>
                                 </Grid>
                                 <Grid container>
-                                    <GridItem xs={12} sm={12} md={6}>
+                                    <GridItem xs={12} sm={6} md={6}>
                                         <TextField
                                             id="password"
                                             label="Password"
                                             type="password"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
-                                            value={this.state.inputValuePassword}
+                                            value={this.state.password}
                                             onChange={this.getValuePassword}
                                         />
                                     </GridItem>
                                 </Grid>
                                 <Grid container>
-                                    <GridItem xs={12} sm={12} md={6}>
+                                    <GridItem xs={12} sm={6} md={6}>
                                         <TextField
                                             id="repeat-password"
                                             label="Repeat password"
                                             type="password"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
-                                            value={this.state.inputValueRepeatPassword}
+                                            value={this.state.rePassword}
                                             onChange={this.getValueRepeatPassword}
                                         />
                                     </GridItem>

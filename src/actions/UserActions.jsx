@@ -7,6 +7,7 @@ import {
     SIGN_UP,
     SIGN_IN,
     SIGN_OUT,
+    GET_USER,
     SUB_CATEGORIES_LIST,
     EXPENSES_LIST,
     EXPENSES_UPDATE,
@@ -15,6 +16,13 @@ import {
 } from '../constants/constants';
 import axios from 'axios';
 import history from '../index';
+
+// let main = {
+//     body: category,
+//     headers: {
+//         "Content-Type": "application/json",
+//         "Authorization": "Bearer "+localStorage.getItem('token')}
+// };
 
 export const signUp = newUser => dispatch => {
     axios.post('http://localhost:3001/signup', newUser)
@@ -39,8 +47,10 @@ export const verifyEmail = newUser => dispatch => {
 }
 export const signIn = newUser => dispatch => {
     axios.post('http://localhost:3001/signin', newUser)
-        .then(function (response) {
-            response.data === 'Incorrect email/password' ? alert(response.data): dispatch(signInOk(response.data))
+        .then(response => {
+            response.data === 'Incorrect email/password' || response.data === 'User is not verified' ?
+                alert(response.data):
+                dispatch(signInOk(response.data))
         })
         .catch(function (error) {console.log(error)});
 }
@@ -61,19 +71,36 @@ export const signOut = () => {
     }
 }
 
-export const categoriesUpdate = () => dispatch => {
-    axios.get('http://localhost:3001/categories')
+export const getUser = token => dispatch => {
+    axios.post('http://localhost:3001/user', token)
+        .then(response => {dispatch(getUserOk(response.data))})
+        .catch(error => {console.log(error)});
+}
+export const getUserOk = data => {
+    return {
+        type: 'GET_USER',
+        payload: data
+    }
+}
+
+// export const categoriesUpdate = () => dispatch => {
+//     axios.get('http://localhost:3001/categories')
+//         .then(function (response) {dispatch(categoriesUpdateOk(response.data))})
+//         .catch(function (error) {console.log(error)})
+// };
+export const categoriesUpdate = (token) => dispatch => {
+    axios.post('http://localhost:3001/categories', token)
         .then(function (response) {dispatch(categoriesUpdateOk(response.data))})
         .catch(function (error) {console.log(error)})
 };
-export const categoriesUpdateOk = (data) => {
+export const categoriesUpdateOk = data => {
     return {
         type: 'CATEGORIES_UPDATE',
         payload: data
     }
 };
 export const addCategory = category => dispatch => {
-    axios.post('http://localhost:3001/categories', category)
+    axios.post('http://localhost:3001/categories/add', category)
         .then(function (response) {dispatch(addCategoryOk(response.data))})
         .catch(function (error) {console.log(error)});
 }
@@ -123,8 +150,13 @@ export const moveCategoryOk = data => {
     }
 }
 
-export const expensesUpdate = () => dispatch => {
-    axios.get('http://localhost:3001/expenses')
+// export const expensesUpdate = () => dispatch => {
+//     axios.get('http://localhost:3001/expenses')
+//         .then(response => dispatch(expensesUpdateOk(response.data)))
+//         .catch(error => console.log(error))
+// };
+export const expensesUpdate = (token) => dispatch => {
+    axios.post('http://localhost:3001/expenses', token)
         .then(response => dispatch(expensesUpdateOk(response.data)))
         .catch(error => console.log(error))
 };
@@ -135,7 +167,7 @@ export const expensesUpdateOk = data => {
     }
 };
 export const addExpense = data => dispatch => {
-    axios.post('http://localhost:3001/expenses', data)
+    axios.post('http://localhost:3001/expenses/add', data)
         .then(response => dispatch(addExpenseOk(response.data)))
         .catch(error => console.log(error));
 }

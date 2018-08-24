@@ -18,10 +18,8 @@ import {connect} from "react-redux";
 import { expensesUpdate } from "../../actions/UserActions";
 import _ from 'lodash';
 
-
 // _.groupBy(['one', 'two', 'three'], 'length');
 // => { '3': ['one', 'two'], '5': ['three'] }
-
 
 const styles = theme => ({
     paper: {
@@ -92,8 +90,9 @@ class Reports extends React.Component {
         sortedExpenses: []
         };
     componentDidMount = () => {
-        if(!localStorage.getItem('token'))  this.props.history.push('/signin');
-        this.props.expensesUpdate();
+        let token = localStorage.getItem('token');
+        if(!token)  this.props.history.push('/signin');
+        this.props.expensesUpdate({token: token});
     };
     getModalStyle = () => {
         const top = 50;
@@ -137,7 +136,11 @@ class Reports extends React.Component {
                 if(item.categoryID===i.parentID){item.valueUAH = Number(item.valueUAH) + Number(i.valueUAH)}
             })
         });
-        return sortedExpenses.map((i) => {return [i.name, String(i.valueUAH), i.parentID]});
+        // return sortedExpenses.map(i => {
+        //     let number = i.valueUAH;
+        //     return [i.name, String(number.toFixed(2)), i.parentID]
+        // });
+        return sortedExpenses.map((i) => {return [i.name, String(_.round(i.valueUAH, 2)), i.parentID]});
         // return sortedExpenses.map((i) => {
         //     let x = 0;
         //     _.forEachRight(sortedExpenses, item => {if(i.categoryID===item.parentID){x += Number(item.valueUAH)}})
@@ -253,7 +256,7 @@ const mapStateToProps = state => ({
     expenses: state.expensesList
 });
 const mapDispatchToProps = dispatch => ({
-    expensesUpdate: () => dispatch(expensesUpdate())
+    expensesUpdate: (token) => dispatch(expensesUpdate(token))
 });
 Reports.propTypes = {
     classes: PropTypes.object.isRequired

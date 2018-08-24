@@ -29,15 +29,17 @@ class Dashboard extends React.Component {
         category: []
     };
     componentDidMount = () => {
-        if(!localStorage.getItem('token'))  this.props.history.push('/signin');
-        this.props.categoriesUpdate();
-        this.props.expensesUpdate();
+        let token = localStorage.getItem('token');
+        if(!token)  this.props.history.push('/signin');
+        this.props.categoriesUpdate({token: token});
+        this.props.expensesUpdate({token: token});
     };
     handleChangeCategory = () => e => {
         this.setState({catName: e.target.value, clear: false})
     };
     getValueUAH = e => {
-        if(e.target.value[0]==="0" || e.target.value[0]==="."){e.target.value = ""}
+        if(e.target.value[0]==="."){e.target.value = ""}
+        if(e.target.value[0]==="0"){e.target.value = parseFloat(e.target.value)}
         e.target.value = e.target.value.replace(/[^\d.]*/g, '').replace(/([.])+/g, '$1').replace(/^[^\d]*(\d+([.]\d{0,2})?).*$/g, '$1');
         this.setState({inputValueUAH: e.target.value, clear: false});
     };
@@ -159,11 +161,10 @@ const mapStateToProps = state => ({
     user: state.userData,
     categories: state.categoriesList,
     expenses: state.expensesList
-
 });
 const mapDispatchToProps = dispatch => ({
-    expensesUpdate: () => dispatch(expensesUpdate()),
-    categoriesUpdate: () => dispatch(categoriesUpdate()),
+    expensesUpdate: (token) => dispatch(expensesUpdate(token)),
+    categoriesUpdate: (token) => dispatch(categoriesUpdate(token)),
     addExpense: (data) => dispatch(addExpense(data))
 });
 Dashboard.propTypes = {

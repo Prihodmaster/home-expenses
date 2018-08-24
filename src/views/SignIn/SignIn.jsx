@@ -1,9 +1,7 @@
-/* eslint-disable */
 import React, {Component} from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Grid from "@material-ui/core/Grid";
 import GridItem from "components/Grid/GridItem.jsx";
-// import CustomInput from "components/CustomInput/CustomInput.jsx";
 import Button from "components/CustomButtons/Button.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
@@ -11,12 +9,8 @@ import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
 import {Link} from "react-router-dom";
 import TextField from '@material-ui/core/TextField';
-// import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-// import UserActions from '../../actions/UserActions';
 import {signIn} from '../../actions/UserActions';
-// import {LOGOUT_SUCCESS} from "../../constants/constants";
-
 
 const styles = {
     cardCategoryWhite: {
@@ -45,23 +39,28 @@ class SignIn extends Component {
         if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
     };
     state = {
-            inputValueEmail: '',
-            inputValuePassword: ''
-        };
-
+        email: '',
+        password: ''
+    };
     signInValue = () => {
-        let newUser = {
-            email: this.state.inputValueEmail,
-            password: this.state.inputValuePassword
-        };
-        this.props.signIn(newUser);
-    }
-    getValueEmail = (e) => {
-        this.setState({inputValueEmail: e.target.value});
-    }
-    getValuePassword = (e) => {
-        this.setState({inputValuePassword: e.target.value});
-    }
+        const { email, password } = this.state;
+        let validate = /^[a-zA-z0-9_.]{1,30}@{1,}[a-z]{3,10}\.{1}[a-z]{2,9}(.[a-z]{2,3}|)$/gm;
+        if(validate.test(email)){
+            if(password!==""){
+                let newUser = {
+                    email: email,
+                    password: password
+                };
+                this.props.signIn(newUser);
+            }else alert("Enter password")
+        }else alert("Incorrect email")
+    };
+    getValueEmail = e => {
+        this.setState({email: e.target.value});
+    };
+    getValuePassword = e => {
+        this.setState({password: e.target.value});
+    };
     render() {
         const {classes} = this.props;
         return (
@@ -75,27 +74,27 @@ class SignIn extends Component {
                             </CardHeader>
                             <CardBody>
                                 <Grid container>
-                                    <GridItem xs={12} sm={12} md={6}>
+                                    <GridItem xs={12} sm={6} md={6}>
                                         <TextField
                                             id="email-address"
                                             label="Email address"
                                             type="text"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
-                                            value={this.state.inputValueEmail}
+                                            value={this.state.email}
                                             onChange={this.getValueEmail}
                                         />
                                     </GridItem>
                                 </Grid>
                                 <Grid container>
-                                    <GridItem xs={12} sm={12} md={6}>
+                                    <GridItem xs={12} sm={6} md={6}>
                                         <TextField
                                             id="password"
                                             label="Password"
                                             type="password"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
-                                            value={this.state.inputValuePassword}
+                                            value={this.state.password}
                                             onChange={this.getValuePassword}
                                         />
                                     </GridItem>
@@ -106,7 +105,6 @@ class SignIn extends Component {
                                 <div>
                                     <p>fast time user? <Link to='/signup'>sign-up</Link></p>
                                 </div>
-
                             </CardFooter>
                         </Card>
                     </GridItem>

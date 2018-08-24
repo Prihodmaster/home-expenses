@@ -34,8 +34,6 @@ const styles = {
         color: "#9c28b0"
     }
 };
-// let inputValueEmail;
-// let inputValueVerification;
 class EmailVerification extends Component {
     componentDidMount = () => {
         if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
@@ -45,11 +43,9 @@ class EmailVerification extends Component {
             email: this.props.match.params.email,
             verifyKey: Number(this.props.match.params.verifyKey)
         };
-        console.log(newUser)
         this.props.verifyEmail(newUser)
-    }
+    };
     render() {
-        console.log(this.props);
         const {classes} = this.props;
         return (
             <div>
@@ -62,25 +58,27 @@ class EmailVerification extends Component {
                             </CardHeader>
                             <CardBody>
                                 <Grid container>
-                                    <GridItem xs={12} sm={12} md={6}>
+                                    <GridItem xs={12} sm={6} md={6}>
                                         <TextField
                                             id="email-address"
                                             label="Email address"
                                             type="text"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
+                                            disabled
                                             value = {this.props.match.params.email}
                                         />
                                     </GridItem>
                                 </Grid>
                                 <Grid container>
-                                    <GridItem xs={12} sm={12} md={6}>
+                                    <GridItem xs={12} sm={6} md={6}>
                                         <TextField
                                             id="verification-code"
                                             label="Verification code"
                                             type="text"
                                             className={classes.TextField} margin="normal"
                                             fullWidth
+                                            disabled
                                             value = {this.props.match.params.verifyKey}
                                         />
                                     </GridItem>
@@ -105,7 +103,6 @@ class EmailVerification extends Component {
 const mapStateToProps = state => ({
     user: state.userData
 });
-
 const mapDispatchToProps = dispatch => ({
     verifyEmail: (newUser) => dispatch(verifyEmail(newUser))
 });
