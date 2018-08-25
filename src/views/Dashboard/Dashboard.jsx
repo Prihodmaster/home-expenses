@@ -14,33 +14,37 @@ import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 import {connect} from "react-redux";
-import {addExpense, expensesUpdate, categoriesUpdate} from "../../actions/UserActions";
+import {addExpense, expensesUpdate, categoriesUpdate, getUser} from "../../actions/UserActions";
 import _ from 'lodash';
 
 class Dashboard extends React.Component {
     state = {
-        value: 0,
         catName: "",
-        inputValueDescription: "",
-        inputValueUAH: "",
-        catID: "",
-        parent: "",
+        valueUAH: "",
         clear: false,
-        category: []
     };
     componentDidMount = () => {
         if(!localStorage.getItem('token'))  this.props.history.push('/signin');
+        this.props.getUser();
         this.props.categoriesUpdate();
         this.props.expensesUpdate();
     };
     handleChangeCategory = () => e => {
-        this.setState({catName: e.target.value, clear: false})
+        this.setState({
+            catName: e.target.value,
+            clear: false
+        })
     };
     getValueUAH = e => {
         if(e.target.value[0]==="."){e.target.value = ""}
-        if(e.target.value[0]==="0"){e.target.value = parseFloat(e.target.value)}
-        e.target.value = e.target.value.replace(/[^\d.]*/g, '').replace(/([.])+/g, '$1').replace(/^[^\d]*(\d+([.]\d{0,2})?).*$/g, '$1');
-        this.setState({inputValueUAH: e.target.value, clear: false});
+        if(e.target.value[0]==="0" && e.target.value[1]!=="."){e.target.value = parseFloat(e.target.value)}
+        e.target.value = e.target.value.replace(/[^\d.]*/g, '')
+            .replace(/([.])+/g, '$1')
+            .replace(/^[^\d]*(\d+([.]\d{0,2})?).*$/g, '$1');
+        this.setState({
+            valueUAH: e.target.value,
+            clear: false
+        });
     };
     newExpense = () => {
         let data = document.querySelectorAll('input');
@@ -58,9 +62,12 @@ class Dashboard extends React.Component {
                 valueUAH: data[2].value
             };
             this.props.addExpense(expense);
-            this.setState({catName: "", inputValueUAH: ""});
+            this.setState({
+                catName: "",
+                valueUAH: "",
+                clear: true
+            });
         }else alert("Please select category and/or enter value")
-        this.setState({clear: true})
     };
     render() {
         const { classes } = this.props;
@@ -113,7 +120,7 @@ class Dashboard extends React.Component {
                                             margin="normal"
                                             fullWidth
                                             placeholder="UAH"
-                                            value={this.state.inputValueUAH}
+                                            value={this.state.valueUAH}
                                             onChange={this.getValueUAH}
                                         />
                                     </GridItem>
@@ -140,7 +147,7 @@ class Dashboard extends React.Component {
                                         tableHead={["Date", "Category", "Expenses", "Value, UAH"]}
                                         tableData={
                                             _.orderBy(expenses, ['millisecDate'], ['desc']).slice(0, 20).map(item => {
-                                                return [item.date.substring(0, 15), item.name, item.description, item.valueUAH]
+                                                return [item.date.substring(0, 15), item.name, item.description, String(item.valueUAH)]
                                             })
                                         }
                                     />
@@ -162,6 +169,7 @@ const mapStateToProps = state => ({
     expenses: state.expensesList
 });
 const mapDispatchToProps = dispatch => ({
+    getUser: () => dispatch(getUser()),
     expensesUpdate: () => dispatch(expensesUpdate()),
     categoriesUpdate: () => dispatch(categoriesUpdate()),
     addExpense: (data) => dispatch(addExpense(data))

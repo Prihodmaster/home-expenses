@@ -9,12 +9,19 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import HeaderLinks from "components/Header/HeaderLinks.jsx";
 import sidebarStyle from "assets/jss/material-dashboard-react/components/sidebarStyle.jsx";
+import AccountCircle from "@material-ui/icons/AccountCircle";
+import Button from "components/CustomButtons/Button.jsx";
+import {signOut} from "../../actions/UserActions";
+import {connect} from "react-redux";
 
 const Sidebar = ({ ...props }) => {
   function activeRoute(routeName) {
     return props.location.pathname.indexOf(routeName) > -1 ? true : false;
+  }
+  function logOut() {
+    props.signOut();
+    props.history.push('/signin')
   }
   const { classes, color, logo, image, logoText, routes } = props;
   var links = (
@@ -85,8 +92,29 @@ const Sidebar = ({ ...props }) => {
         >
           {brand}
           <div className={classes.sidebarWrapper}>
-            <HeaderLinks />
             {links}
+              {
+                  localStorage.getItem('token') ?
+                      <div style={{position: "absolute", bottom: "0"}}>
+                      <Button
+                          color={window.innerWidth > 959 ? "transparent" : "white"}
+                          justIcon={window.innerWidth > 959}
+                          simple={!(window.innerWidth > 959)}
+                          aria-label="Notifications"
+                          aria-haspopup="true"
+                          onClick={logOut}
+                          className={classes.buttonLink}
+                      >
+                          <AccountCircle className={classes.icons} />
+                          <Hidden mdUp>
+                              <p onClick={this.handleClick} className={classes.linkText} style={{textTransform: "initial"}}>Sign out</p>
+                          </Hidden>
+                      </Button>
+
+                  </div>
+                      :
+                      null
+              }
           </div>
           {image !== undefined ? (
             <div
@@ -118,9 +146,14 @@ const Sidebar = ({ ...props }) => {
     </div>
   );
 };
-
 Sidebar.propTypes = {
   classes: PropTypes.object.isRequired
 };
+const mapStateToProps = state => ({
+    user: state.userData
+});
+const mapDispatchToProps = dispatch => ({
+    signOut: () => dispatch(signOut())
+});
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(sidebarStyle)(Sidebar));
 
-export default withStyles(sidebarStyle)(Sidebar);

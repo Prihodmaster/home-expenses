@@ -43,26 +43,43 @@ const styles = {
     },
     CardFooter: {
         display: "inline-block",
-        color: "#9c28b0"
+        color: "#9c28b0",
+        padding: "0.9375rem 20px"
+    } ,
+    UserSuccess: {
+        color: "#e20d0d",
+        marginTop: "-33px"
     }
 };
 class SignUp extends React.Component {
     state = {
         email: '',
         password: '',
-        rePassword: ''
+        rePassword: '',
+        regOK: false
     };
     componentDidMount = () => {
         if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
     };
     getValueEmail = e => {
-        this.setState({email: e.target.value});
+        this.setState({
+            email: e.target.value
+        })
     };
     getValuePassword = e => {
-        this.setState({password: e.target.value});
+        this.setState({
+            password: e.target.value
+        })
     };
     getValueRepeatPassword = e => {
-        this.setState({rePassword: e.target.value});
+        this.setState({
+            rePassword: e.target.value
+        })
+    };
+    clear = () => {
+        this.setState({
+            regOK: false
+        })
     };
     signUp = () => {
         const { email, password, rePassword } = this.state;
@@ -76,6 +93,12 @@ class SignUp extends React.Component {
                         verified: false
                     };
                     this.props.signUp(newUser)
+                    this.setState({
+                        email: '',
+                        password: '',
+                        rePassword: '',
+                        regOK: true
+                    })
                 }else alert("Enter password")
             }else alert("Passwords do not match")
         }else alert("Incorrect email")
@@ -102,6 +125,7 @@ class SignUp extends React.Component {
                                             fullWidth
                                             value={this.state.email}
                                             onChange={this.getValueEmail}
+                                            onClick={this.clear}
                                         />
                                     </GridItem>
                                 </Grid>
@@ -115,6 +139,7 @@ class SignUp extends React.Component {
                                             fullWidth
                                             value={this.state.password}
                                             onChange={this.getValuePassword}
+                                            onClick={this.clear}
                                         />
                                     </GridItem>
                                 </Grid>
@@ -128,11 +153,20 @@ class SignUp extends React.Component {
                                             fullWidth
                                             value={this.state.rePassword}
                                             onChange={this.getValueRepeatPassword}
+                                            onClick={this.clear}
                                         />
                                     </GridItem>
                                 </Grid>
                             </CardBody>
                             <CardFooter className={classes.CardFooter}>
+                                {
+                                    this.state.regOK ?
+                                        <div className={classes.UserSuccess}>
+                                            User registered successfully! <br/>
+                                            Please check your email and confirm the registration by the link!
+                                        </div>
+                                        : null
+                                }
                                 <Button color="primary" onClick={this.signUp}>SIGN UP</Button>
                                 <div>
                                     <p>fast time user? <Link to='/signin'>sign-in</Link></p>

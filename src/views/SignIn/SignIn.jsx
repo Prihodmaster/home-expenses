@@ -32,6 +32,7 @@ const styles = {
     CardFooter: {
         display: "inline-block",
         color: "#9c28b0",
+        padding: "0.9375rem 20px"
     }
 };
 class SignIn extends Component {
@@ -51,15 +52,19 @@ class SignIn extends Component {
                     email: email,
                     password: password
                 };
-                this.props.signIn(newUser);
+                this.props.signIn(newUser)
             }else alert("Enter password")
         }else alert("Incorrect email")
     };
     getValueEmail = e => {
-        this.setState({email: e.target.value});
+        this.setState({
+            email: e.target.value
+        })
     };
     getValuePassword = e => {
-        this.setState({password: e.target.value});
+        this.setState({
+            password: e.target.value
+        })
     };
     render() {
         const {classes} = this.props;

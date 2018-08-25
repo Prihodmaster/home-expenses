@@ -66,24 +66,46 @@ class HeaderLinks extends React.Component {
                             classes.pooperResponsive
                         }
                     >
-                        <ClickAwayListener onClickAway={this.handleClose}>
-                            <Grow
-                                in={open}
-                                id="menu-list"
-                                style={{ transformOrigin: "0 0 0" }}
-                            >
-                                <Paper className={classes.dropdown}>
-                                    <MenuList role="menu">
-                                        <Link to='/signin'>
-                                            <MenuItem onClick={this.logOut} className={classes.dropdownItem}>Sign Out</MenuItem>
-                                        </Link>
-                                    </MenuList>
-                                </Paper>
-                            </Grow>
-                        </ClickAwayListener>
+
+                        {
+                        localStorage.getItem('token') ?
+                            <ClickAwayListener onClickAway={this.handleClose}>
+                                <Grow
+                                    in={open}
+                                    id="menu-list"
+                                    style={{ transformOrigin: "0 0 0" }}
+                                >
+                                    <Paper className={classes.dropdown}>
+                                        <MenuList role="menu">
+                                            <Link to='/signin'>
+                                                <MenuItem onClick={this.logOut} className={classes.dropdownItem}>Sign Out</MenuItem>
+                                            </Link>
+                                        </MenuList>
+                                    </Paper>
+                                </Grow>
+                            </ClickAwayListener>
+                        :
+                            <ClickAwayListener onClickAway={this.handleClose}>
+                                <Grow
+                                    in={open}
+                                    id="menu-list"
+                                    style={{ transformOrigin: "0 0 0" }}
+                                >
+                                    <Paper className={classes.dropdown}>
+                                        <MenuList role="menu">
+                                            <Link to='/signin'>
+                                                <MenuItem onClick={this.handleClose} className={classes.dropdownItem}>Sign in</MenuItem>
+                                            </Link>
+                                            <Link to='/signup'>
+                                                <MenuItem onClick={this.handleClose} className={classes.dropdownItem}>Sign up</MenuItem>
+                                            </Link>
+                                        </MenuList>
+                                    </Paper>
+                                </Grow>
+                            </ClickAwayListener>
+                        }
                     </Popper>
                 </Manager>
-
             </div>
         );
     }

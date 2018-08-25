@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from "react";
 import PropTypes from "prop-types";
 import Grid from "@material-ui/core/Grid";
@@ -32,10 +31,6 @@ const styles = theme => ({
         padding: "10px 10px",
         margin: "20px 15px",
     },
-    container: {
-        display: 'inline-block',
-        flexWrap: 'wrap',
-    },
     textField: {
         marginLeft: theme.spacing.unit,
         marginRight: theme.spacing.unit,
@@ -50,27 +45,8 @@ const styles = theme => ({
         wordWrap: 'break-word',
         verticalAlign: "middle"
     },
-    nextCubcategory: {
-        width: "24%",
-        marginLeft: "40px",
-        display: "inline-block"
-    },
-    nextCubcategoryButton: {
-        marginLeft: "25%",
-    },
-    itemCubcategory: {
-        marginLeft: "4%",
-    },
     Cancel: {
         marginLeft: "450px"
-    },
-    subCategoryButton: {
-        width: "70px",
-        height: "40px"
-    },
-    nameSpan: {
-        width: "70px",
-        height: "40px"
     },
     categoryPaper: {
         width: '100%',
@@ -103,10 +79,6 @@ const styles = theme => ({
         textAlign: "center",
         padding: "10px 0 0 0"
     },
-    modalTitle: {
-        textAlign: "center",
-        padding: "0 0 30px 0"
-    },
     nameCatModal: {
         color: "red"
     },
@@ -124,18 +96,13 @@ const styles = theme => ({
 });
 class Config extends React.Component {
     state = {
-        category: [],
-        grouped: [],
-        subList: [],
         subListToAdd: [],
         openDelete: false,
         openName: false,
         openSubList: false,
-        indexCategory: 0,
         tempID: 0,
         subID: 0,
-        indexSubCategory: 0,
-        inputValueCategoryName: ""
+        name: ""
     };
     componentDidMount = () => {
         if(!localStorage.getItem('token'))  this.props.history.push('/signin');
@@ -143,7 +110,9 @@ class Config extends React.Component {
         this.props.categoriesUpdate();
     };
     componentWillReceiveProps = nextProps => {
-        this.setState({subListToAdd: [...nextProps.categories.categories].filter(i => i.parentID==="0" && i.isSub===false)});
+        this.setState({
+            subListToAdd: [...nextProps.categories.categories].filter(i => i.parentID==="0" && i.isSub===false)
+        });
     };
     getModalStyle = () => {
         const top = 50;
@@ -188,30 +157,40 @@ class Config extends React.Component {
     handleOpenDelete = item => {
         this.setState({
             openDelete: true,
-            inputValueCategoryName: item.name,
+            name: item.name,
             tempID: item._id
         });
     };
-    handleCloseDelete = () => {this.setState({ openDelete: false })};
+    handleCloseDelete = () => {
+        this.setState({
+            openDelete: false
+        })
+    };
     deleteCategory = () => {
         const { grouped } = this.props.categories;
         let arrSubFromID =[];
         grouped[this.state.tempID] && _.forEach(grouped[this.state.tempID], item => arrSubFromID.push(item.subFromID));
-        this.setState({openDelete: false}, () => this.props.deleteCategory({id: this.state.tempID, arrSub: arrSubFromID}))
+        this.setState({openDelete: false},
+            () => this.props.deleteCategory({id: this.state.tempID, arrSub: arrSubFromID})
+        )
     };
     handleOpenName = item => {
         const { categories } = this.props.categories;
         let current = _.findIndex(categories, i => i._id === item._id);
         this.setState({
             openName: true,
-            inputValueCategoryName: categories[current].name,
+            name: categories[current].name,
             tempID: item._id
         });
     };
-    handleCloseName = () => {this.setState({openName: false})};
+    handleCloseName = () => {
+        this.setState({
+            openName: false
+        })
+    };
     renameCat = () => {
         this.setState({openName: false}, () => {
-            this.props.renameCategory({name: this.state.inputValueCategoryName, id: this.state.tempID});
+            this.props.renameCategory({name: this.state.name, id: this.state.tempID});
         })
     };
     moveCategory = (item, move) => {
@@ -226,10 +205,26 @@ class Config extends React.Component {
             if(swap > current && swap!== -1) {this.props.moveCategory({current: item, swap: temp[swap]})}
         }
     };
-    handleOpenSub = item => {this.setState({openSubList: true, tempID: item._id})};
-    handleCloseSub = () => {this.setState({openSubList: false})};
-    handleChangeCategory = () => e => {this.setState({subID: e.target.value})};
-    getValueCategoryName = e => {this.setState({inputValueCategoryName: e.target.value})};
+    handleOpenSub = item => {
+        this.setState({
+            openSubList: true, tempID: item._id
+        })
+    };
+    handleCloseSub = () => {
+        this.setState({
+            openSubList: false
+        })
+    };
+    handleChangeCategory = () => e => {
+        this.setState({
+            subID: e.target.value
+        })
+    };
+    getValueCategoryName = e => {
+        this.setState({
+            name: e.target.value
+        })
+    };
     addSubcategory = () => {
         const { tempID, subID, subListToAdd } = this.state;
         let current = _.findIndex(subListToAdd, i => i._id === subID);
@@ -245,7 +240,9 @@ class Config extends React.Component {
             this.props.addSubcategory(sub);
         }
     };
-    removeFromSub = item => {this.props.removeFromSub(item)};
+    removeFromSub = item => {
+        this.props.removeFromSub(item)
+    };
     groupCategories = categories => {
         const { classes } = this.props;
         const { subListToAdd, tempID } = this.state;
@@ -270,7 +267,7 @@ class Config extends React.Component {
                                         margin="normal"
                                         fullWidth
                                         className={classes.modalTextField}
-                                        value={this.state.inputValueCategoryName}
+                                        value={this.state.name}
                                         onChange={this.getValueCategoryName}
                                     />
                                     <Button color="primary" className={classes.reportsButton} onClick={() => this.renameCat()}>SAVE</Button>
@@ -283,7 +280,7 @@ class Config extends React.Component {
                             <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
                                 <div style={this.getModalStyle()} className={classes.paper}>
                                     <Typography variant="title" id="modal-title">Do you really want to Delete this Category:
-                                        <span className={classes.nameCatModal}> {this.state.inputValueCategoryName} </span>?
+                                        <span className={classes.nameCatModal}> {this.state.name} </span>?
                                     </Typography>
                                      <div className={classes.modalButton}>
                                         <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
@@ -365,8 +362,6 @@ class Config extends React.Component {
     render() {
         const { grouped } = this.props.categories;
         const { classes } = this.props;
-        console.log("categories", this.props.categories);
-        console.log("user", this.props.user);
         return (
             <div>
                 <Grid container>

@@ -31,7 +31,8 @@ const styles = {
   },
     CardFooter: {
         display: "inline-block",
-        color: "#9c28b0"
+        color: "#9c28b0",
+        padding: "0.9375rem 20px"
     }
 };
 class EmailVerification extends Component {
@@ -89,7 +90,6 @@ class EmailVerification extends Component {
                                 <div>
                                     <p>already have an account? <Link to='/signin'>sign-in</Link></p>
                                 </div>
-
                             </CardFooter>
                         </Card>
                     </GridItem>
