@@ -32,10 +32,11 @@ class HeaderLinks extends React.Component {
     };
     render() {
         const { classes } = this.props;
+        const { user } = this.props.user;
         const { open } = this.state;
         return (
             <div>
-                <span>{(this.props.user.user) ? this.props.user.user.email : null}</span>
+                <span>{user ? user.email : null}</span>
                 <Manager className={classes.manager}>
                     <Target>
                         <Button
@@ -52,7 +53,7 @@ class HeaderLinks extends React.Component {
                                 !localStorage.getItem('token') ? <Person className={classes.icons} />:<AccountCircle className={classes.icons} />
                             }
                             <Hidden mdUp>
-                                <p onClick={this.handleClick} className={classes.linkText}>Sign out</p>
+                                <p onClick={this.handleClick} className={classes.linkText} style={{textTransform: "initial"}}>Sign out</p>
                             </Hidden>
                         </Button>
                     </Target>

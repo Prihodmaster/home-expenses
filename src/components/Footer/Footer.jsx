@@ -28,12 +28,10 @@ function Footer({ ...props }) {
                     </List>
                 </div>
                 <p className={classes.right}>
-          <span>
-            &copy; {1900 + new Date().getYear()}{" "}
-              <a href="https://www.creative-tim.com" className={classes.a}>
-              Sergey Prikhodko
-            </a>, made with love for a better web
-          </span>
+                  <span>
+                    &copy; {1900 + new Date().getYear()}{" "}
+                      <a href="https://github.com/Prihodmaster/home-expenses" className={classes.a}>Sergey Prikhodko</a>, made with love for a better web
+                  </span>
                 </p>
             </div>
         </footer>

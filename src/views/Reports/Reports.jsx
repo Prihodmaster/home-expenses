@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from "react";
 import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
@@ -17,10 +16,7 @@ import TextField from '@material-ui/core/TextField';
 import {connect} from "react-redux";
 import { expensesUpdate } from "../../actions/UserActions";
 import _ from 'lodash';
-
-// _.groupBy(['one', 'two', 'three'], 'length');
-// => { '3': ['one', 'two'], '5': ['three'] }
-
+/* eslint-disable */
 const styles = theme => ({
     paper: {
         position: 'absolute',
@@ -31,7 +27,7 @@ const styles = theme => ({
     },
     reportsButton: {
         padding: "10px 10px",
-        margin: "20px 0 0 30px"
+        margin: "20px 0 0 30px",
     },
     container: {
         display: 'inline-block',
@@ -80,7 +76,6 @@ const styles = theme => ({
 const Day = 86400000;
 const Week = 604800000;
 const Month = 2592000000;
-// const sortedExpenses = [];
 class Reports extends React.Component {
     state = {
         Interval: Day,

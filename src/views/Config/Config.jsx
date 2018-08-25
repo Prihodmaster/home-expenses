@@ -138,10 +138,9 @@ class Config extends React.Component {
         inputValueCategoryName: ""
     };
     componentDidMount = () => {
-        let token = localStorage.getItem('token');
-        if(!token)  this.props.history.push('/signin');
-        this.props.getUser({token: token});
-        this.props.categoriesUpdate({token: token});
+        if(!localStorage.getItem('token'))  this.props.history.push('/signin');
+        this.props.getUser();
+        this.props.categoriesUpdate();
     };
     componentWillReceiveProps = nextProps => {
         this.setState({subListToAdd: [...nextProps.categories.categories].filter(i => i.parentID==="0" && i.isSub===false)});
@@ -176,14 +175,11 @@ class Config extends React.Component {
         return locate
     };
     addCategory = () => {
-        // let x = _.sortBy([...this.props.categories.categories], [i => i.location]);//по возрастанию
-        // let maxLocate = _.orderBy([...this.props.categories.categories], ['location'], ['asc']);//по возрастанию
         let category = {
             userID: this.props.user.user._id,
             location: this.maxLocate(),
             parentID: "0",
             subFromID: "",
-            children: false,
             isSub: false,
             name: this.maxLocate()
         };
@@ -243,7 +239,6 @@ class Config extends React.Component {
                 location: this.maxLocate(),
                 parentID: tempID,
                 subFromID: subID,
-                children: false,
                 isSub: true,
                 name: subListToAdd[current].name
             };
@@ -405,13 +400,13 @@ const mapStateToProps = state => ({
     categories: state.categoriesList
 });
 const mapDispatchToProps = dispatch => ({
-    categoriesUpdate: (token) => dispatch(categoriesUpdate(token)),
+    categoriesUpdate: () => dispatch(categoriesUpdate()),
     addCategory: (category) => dispatch(addCategory(category)),
     renameCategory: (rename) => dispatch(renameCategory(rename)),
     addSubcategory: (sub) => dispatch(addSubcategory(sub)),
     moveCategory: (data) => dispatch(moveCategory(data)),
     deleteCategory: (del) => dispatch(deleteCategory(del)),
-    getUser: (token) => dispatch(getUser(token)),
+    getUser: () => dispatch(getUser()),
     removeFromSub: (sub) => dispatch(removeFromSub(sub))
 });
 Config.propTypes = {

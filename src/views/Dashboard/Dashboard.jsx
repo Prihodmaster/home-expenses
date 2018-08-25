@@ -29,10 +29,9 @@ class Dashboard extends React.Component {
         category: []
     };
     componentDidMount = () => {
-        let token = localStorage.getItem('token');
-        if(!token)  this.props.history.push('/signin');
-        this.props.categoriesUpdate({token: token});
-        this.props.expensesUpdate({token: token});
+        if(!localStorage.getItem('token'))  this.props.history.push('/signin');
+        this.props.categoriesUpdate();
+        this.props.expensesUpdate();
     };
     handleChangeCategory = () => e => {
         this.setState({catName: e.target.value, clear: false})
@@ -163,8 +162,8 @@ const mapStateToProps = state => ({
     expenses: state.expensesList
 });
 const mapDispatchToProps = dispatch => ({
-    expensesUpdate: (token) => dispatch(expensesUpdate(token)),
-    categoriesUpdate: (token) => dispatch(categoriesUpdate(token)),
+    expensesUpdate: () => dispatch(expensesUpdate()),
+    categoriesUpdate: () => dispatch(categoriesUpdate()),
     addExpense: (data) => dispatch(addExpense(data))
 });
 Dashboard.propTypes = {
