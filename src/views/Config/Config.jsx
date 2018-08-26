@@ -150,7 +150,7 @@ class Config extends React.Component {
             parentID: "0",
             subFromID: "",
             isSub: false,
-            name: this.maxLocate()
+            name: ""
         };
         this.props.addCategory(category)
     };
@@ -245,7 +245,6 @@ class Config extends React.Component {
     };
     groupCategories = categories => {
         const { classes } = this.props;
-        const { subListToAdd, tempID } = this.state;
         const { grouped } = this.props.categories;
         return categories.sort(function (a, b) {
             if (a.location < b.location) {return -1}
@@ -257,75 +256,11 @@ class Config extends React.Component {
                     <Paper className={classes.categoryPaper}>
                         <div className={classes.categoryItem}>
                             <span className={classes.nameCategory} onClick={() => this.handleOpenName(item)}>{item.name}</span>
-                            <Modal open={this.state.openName} onClose={this.handleCloseName}>
-                                <div style={this.getModalStyle()} className={classes.paper}>
-                                    <Typography variant="title" id="modal-title">Edit category name</Typography>
-                                    <TextField
-                                        id="CategoryName"
-                                        label="Edit category name"
-                                        type="text"
-                                        margin="normal"
-                                        fullWidth
-                                        className={classes.modalTextField}
-                                        value={this.state.name}
-                                        onChange={this.getValueCategoryName}
-                                    />
-                                    <Button color="primary" className={classes.reportsButton} onClick={() => this.renameCat()}>SAVE</Button>
-                                </div>
-                            </Modal>
                             <span>
                             <Button color="info" onClick={() => this.moveCategory(item, "Up")}><ArrowUpward/></Button>
                             <Button color="info" onClick={() => this.moveCategory(item, "Down")}><ArrowDownward/></Button>
                             <Button color="warning" onClick={() => item.parentID==="0" ? this.handleOpenDelete(item): this.removeFromSub(item)}><Cancel/></Button>
-                            <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
-                                <div style={this.getModalStyle()} className={classes.paper}>
-                                    <Typography variant="title" id="modal-title">Do you really want to Delete this Category:
-                                        <span className={classes.nameCatModal}> {this.state.name} </span>?
-                                    </Typography>
-                                     <div className={classes.modalButton}>
-                                        <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
-                                        <Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>
-                                    </div>
-
-                                </div>
-                             </Modal>
                             <Button color="info" onClick={() => this.handleOpenSub(item)}>*</Button>
-                            <Modal open={this.state.openSubList} onClose={this.handleCloseSub}>
-                                <div style={this.getModalStyleSub()} className={classes.paper}>
-                                    <Cancel className={classes.Cancel} onClick={() => this.handleCloseSub()}/>
-                                    <Typography variant="title" id="modal-title">Subcategories list</Typography>
-                                    {
-                                        grouped[tempID] && grouped[tempID].length>0 ?
-                                            <div className={classes.scrollSub}>
-                                                <List className = {classes.categoryList}>
-                                                    {this.groupSub(grouped[tempID])}
-                                                </List>
-                                            </div>
-                                            :
-                                            <div className={classes.noCategories}>No subcategories</div>
-                                    }
-                                    <TextField
-                                        id="select-category"
-                                        select
-                                        label="Category"
-                                        className={classes.TextField}
-                                        value={this.state.subID}
-                                        onChange={this.handleChangeCategory()}
-                                        SelectProps={{MenuProps: {className: classes.menu}}}
-                                        fullWidth
-                                        margin="normal"
-                                    >
-                                        {
-                                            subListToAdd && subListToAdd.map((item, i) => (
-                                                <MenuItem key={i} value={item._id}>
-                                                    {item.name}
-                                                </MenuItem>
-                                            ))
-                                        }
-                                    </TextField>
-                                    <Button color="primary" className={classes.reportsButton} onClick={this.addSubcategory}>ADD CATEGORY</Button>
-                                </div>
-                            </Modal>
                             </span>
                         </div>
                         {grouped[item._id] && this.groupCategories(grouped[item._id])}
@@ -362,6 +297,7 @@ class Config extends React.Component {
     render() {
         const { grouped } = this.props.categories;
         const { classes } = this.props;
+        const { subListToAdd, tempID } = this.state;
         return (
             <div>
                 <Grid container>
@@ -380,6 +316,70 @@ class Config extends React.Component {
                                         :
                                         <div className={classes.noCategories}>No categories</div>
                                 }
+                                <Modal open={this.state.openName} onClose={this.handleCloseName}>
+                                    <div style={this.getModalStyle()} className={classes.paper}>
+                                        <Typography variant="title" id="modal-title">Edit category name</Typography>
+                                        <TextField
+                                            id="CategoryName"
+                                            label="Edit category name"
+                                            type="text"
+                                            margin="normal"
+                                            fullWidth
+                                            className={classes.modalTextField}
+                                            value={this.state.name}
+                                            onChange={this.getValueCategoryName}
+                                        />
+                                        <Button color="primary" className={classes.reportsButton} onClick={() => this.renameCat()}>SAVE</Button>
+                                    </div>
+                                </Modal>
+                                <Modal open={this.state.openDelete} onClose={this.handleCloseDelete}>
+                                    <div style={this.getModalStyle()} className={classes.paper}>
+                                        <Typography variant="title" id="modal-title">Do you really want to Delete this Category:
+                                            <span className={classes.nameCatModal}> {this.state.name} </span>?
+                                        </Typography>
+                                        <div className={classes.modalButton}>
+                                            <Button color="primary" className={classes.reportsButton} onClick={() => this.deleteCategory()}>YES</Button>
+                                            <Button color="primary" className={classes.reportsButton} onClick={this.handleCloseDelete}>NO</Button>
+                                        </div>
+
+                                    </div>
+                                </Modal>
+                                <Modal open={this.state.openSubList} onClose={this.handleCloseSub}>
+                                    <div style={this.getModalStyleSub()} className={classes.paper}>
+                                        <Cancel className={classes.Cancel} onClick={() => this.handleCloseSub()}/>
+                                        <Typography variant="title" id="modal-title">Subcategories list</Typography>
+                                        {
+                                            grouped[tempID] && grouped[tempID].length>0 ?
+                                                <div className={classes.scrollSub}>
+                                                    <List className = {classes.categoryList}>
+                                                        {this.groupSub(grouped[tempID])}
+                                                    </List>
+                                                </div>
+                                                :
+                                                <div className={classes.noCategories}>No subcategories</div>
+                                        }
+                                        <TextField
+                                            id="select-category"
+                                            select
+                                            label="Category"
+                                            className={classes.TextField}
+                                            value={this.state.subID}
+                                            onChange={this.handleChangeCategory()}
+                                            SelectProps={{MenuProps: {className: classes.menu}}}
+                                            fullWidth
+                                            margin="normal"
+                                        >
+                                            {
+                                                subListToAdd && subListToAdd.map((item, i) => (
+                                                    <MenuItem key={i} value={item._id}>
+                                                        {item.name}
+                                                    </MenuItem>
+                                                ))
+                                            }
+                                        </TextField>
+                                        <Button color="primary" className={classes.reportsButton} onClick={this.addSubcategory}>ADD CATEGORY</Button>
+                                    </div>
+                                </Modal>
                                 <Button color="primary" onClick={this.addCategory}>ADD CATEGORY</Button>
                             </CardBody>
                         </Card>

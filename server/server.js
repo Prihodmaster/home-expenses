@@ -12,8 +12,7 @@ const port = process.env.port || 3001;
 
 app.use(bodyParser.urlencoded({extended: true }));
 app.use(bodyParser.json());
-
-mongoose.connect(db,  err => {
+mongoose.connect(db,  { useNewUrlParser: true }, err => {
     if (err) throw err;
     console.log('Successfully connected');
 });

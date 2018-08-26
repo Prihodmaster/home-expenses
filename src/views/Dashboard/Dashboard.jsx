@@ -73,6 +73,8 @@ class Dashboard extends React.Component {
         const { classes } = this.props;
         const { expenses } = this.props.expenses;
         const { categories } = this.props.categories;
+        console.log(this.props.user.user)
+        console.log(categories)
         return (
             <div>
                 <Grid container>

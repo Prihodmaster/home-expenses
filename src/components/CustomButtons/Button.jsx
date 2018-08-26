@@ -39,7 +39,7 @@ function RegularButton({ ...props }) {
   });
   return (
     <Button {...rest} classes={muiClasses} className={btnClasses}>
-      {children}
+      {children ? children : ''}
     </Button>
   );
 }

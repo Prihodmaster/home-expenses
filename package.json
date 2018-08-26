@@ -30,7 +30,8 @@
     "react-swipeable-views": "0.12.13",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "url-parse": "^1.4.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -50,6 +51,7 @@
   },
   "homepage": "https://creativetimofficial.github.io/material-dashboard-react/#/dashboard",
   "devDependencies": {
+    "flow-remove-types": "^1.2.3",
     "redux-devtools": "^3.4.1"
   }
 }
