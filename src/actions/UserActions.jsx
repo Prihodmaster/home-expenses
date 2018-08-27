@@ -11,7 +11,9 @@ import {
     EXPENSES_LIST,
     EXPENSES_UPDATE,
     REMOVE_FROM_SUB,
-    CATEGORIES_UPDATE
+    CATEGORIES_UPDATE,
+    CATEGORIES_OUT,
+    EXPENSES_OUT
 } from '../constants/constants';
 import axios from 'axios';
 import history from '../index';
@@ -59,9 +61,19 @@ export const verifyEmail = newUser => dispatch => {
 }
 export const signOut = () => {
     localStorage.clear();
+    head.headers.Authorization = "Bearer null";
     return {
-        type: SIGN_OUT,
-        payload: {}
+        type: SIGN_OUT
+    }
+}
+export const categoriesOut = () => {
+    return {
+        type: CATEGORIES_OUT
+    }
+}
+export const expensesOut = () => {
+    return {
+        type: EXPENSES_OUT
     }
 }
 

@@ -5,7 +5,8 @@ import {
     DELETE_CATEGORY,
     SUB_CATEGORIES_LIST,
     CATEGORIES_UPDATE,
-    REMOVE_FROM_SUB
+    REMOVE_FROM_SUB,
+    CATEGORIES_OUT
 } from '../constants/constants'
 
 function groupCategories(categories) {
@@ -61,11 +62,16 @@ export default function categories(state = {categories: [], grouped: []}, action
             let tempSub = [...state.categories];
             let currentSub = tempSub.findIndex(item => item._id===action.payload._id);
             let main = tempSub.findIndex(item => item._id===action.payload.subFromID);
-            tempSub[currentSub].isSub = false;
-            tempSub[currentSub].parentID = "0";
+            if(tempSub.length !== 0){
+                tempSub[currentSub].isSub = false;
+                tempSub[currentSub].parentID = "0";
+            }
             if(tempSub[main]){tempSub[main].isSub = false;}
             let changeSub = groupCategories(tempSub);
             return { ...state, categories: tempSub, grouped: changeSub};
+
+        case CATEGORIES_OUT:
+            return { ...state, categories:  [], grouped: []};
 
         default:
             return state

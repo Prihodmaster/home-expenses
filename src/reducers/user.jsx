@@ -9,7 +9,7 @@ export default function user(state = {user: {}, message: ""}, action) {
         case SIGN_UP:
             return {...state, message: action.payload};
         case SIGN_OUT:
-            return {};
+            return {...state, user: {}, message: ""};
         default:
             return state
     }

@@ -12,7 +12,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import sidebarStyle from "assets/jss/material-dashboard-react/components/sidebarStyle.jsx";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import Button from "components/CustomButtons/Button.jsx";
-import {signOut} from "../../actions/UserActions";
+import {signOut, categoriesOut, expensesOut} from "../../actions/UserActions";
 import {connect} from "react-redux";
 
 const Sidebar = ({ ...props }) => {
@@ -21,6 +21,8 @@ const Sidebar = ({ ...props }) => {
   }
   function logOut() {
     props.signOut();
+    props.categoriesOut();
+    props.expensesOut();
     props.history.push('/signin')
   }
   const { classes, color, logo, image, logoText, routes } = props;
@@ -153,7 +155,9 @@ const mapStateToProps = state => ({
     user: state.userData
 });
 const mapDispatchToProps = dispatch => ({
-    signOut: () => dispatch(signOut())
+    signOut: () => dispatch(signOut()),
+    categoriesOut: () => dispatch(categoriesOut()),
+    expensesOut: () => dispatch(expensesOut())
 });
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(sidebarStyle)(Sidebar));
 

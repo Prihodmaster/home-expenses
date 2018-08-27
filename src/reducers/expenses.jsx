@@ -1,4 +1,4 @@
-import {EXPENSES_LIST, EXPENSES_UPDATE} from '../constants/constants'
+import {EXPENSES_LIST, EXPENSES_UPDATE, EXPENSES_OUT} from '../constants/constants'
 
 function groupExpenses(categories) {
     return categories.length && categories.reduce((groups, category) => {
@@ -25,6 +25,9 @@ export default function expenses(state = {expenses: [], grouped: [], desclist: [
             let update = groupExpenses(action.payload);
             let descUpdate = groupDesc(action.payload);
             return { ...state, expenses:  action.payload, grouped: update, desclist: descUpdate};
+
+        case EXPENSES_OUT:
+            return { ...state, expenses:  [], grouped: [], desclist: []};
 
         default:
             return state

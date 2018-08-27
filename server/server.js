@@ -3,8 +3,6 @@ const MongoClient = require('mongodb').MongoClient;
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const {passport} = require('./config/passport');
-// const passport = require('passport');
-// const passportJWT = require("passport-jwt");
 const mongoose = require('mongoose');
 const app = express();
 const cors = require('cors');
@@ -136,55 +134,3 @@ MongoClient.connect(db, (err) => {
         console.log('We are live on ' + port);
     });
 })
-
-
-
-
-// const categoriesSchema = mongoose.Schema({
-//     userID: String,
-//     location: Number,
-//     parentID: String,
-//     subFromID: String,
-//     isSub: Boolean,
-//     name: String
-// });
-// const expensesSchema = mongoose.Schema({
-//     userID: String,
-//     date: String,
-//     millisecDate: Number,
-//     categoryID: String,
-//     parentID: String,
-//     name: String,
-//     valueUAH: String,
-//     description: String
-// });
-// const usersSchema = mongoose.Schema({
-//     email: String,
-//     verifyKey: Number,
-//     password: String,
-//     verified: Boolean
-// });
-//
-// const categories = mongoose.model('categories', categoriesSchema);
-// const expenses = mongoose.model('expenses', expensesSchema);
-// const users = mongoose.model('users', usersSchema);
-//
-//
-//
-//
-// const ExtractJwt = passportJWT.ExtractJwt;
-// const JwtStrategy = passportJWT.Strategy;
-// const jwtOpt = {}
-// jwtOpt.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-// jwtOpt.secretOrKey = 'secret';
-//
-// const strategy = new JwtStrategy(jwtOpt, (jwt_payload, done) => {
-//     users.findById(jwt_payload._id)
-//         .then(user => user ? done(null, user) : done(null, false))
-//         .catch(err => console.log(err));
-// })
-// passport.use(strategy);
-// app.use(cors());
-// app.use(passport.initialize());
-//
-//

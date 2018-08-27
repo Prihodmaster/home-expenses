@@ -13,7 +13,7 @@ import Button from "components/CustomButtons/Button.jsx";
 import { Link } from "react-router-dom";
 import headerLinksStyle from "assets/jss/material-dashboard-react/components/headerLinksStyle";
 import MenuItem from "@material-ui/core/MenuItem";
-import {signOut} from "../../actions/UserActions";
+import {signOut, categoriesOut, expensesOut} from "../../actions/UserActions";
 import {connect} from 'react-redux';
 
 class HeaderLinks extends React.Component {
@@ -29,6 +29,8 @@ class HeaderLinks extends React.Component {
     logOut = () => {
         this.setState({ open: false });
         this.props.signOut();
+        this.props.categoriesOut();
+        this.props.expensesOut();
     };
     render() {
         const { classes } = this.props;
@@ -115,6 +117,8 @@ const mapStateToProps = state => ({
     user: state.userData
 });
 const mapDispatchToProps = dispatch => ({
-    signOut: () => dispatch(signOut())
+    signOut: () => dispatch(signOut()),
+    categoriesOut: () => dispatch(categoriesOut()),
+    expensesOut: () => dispatch(expensesOut())
 });
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(headerLinksStyle)(HeaderLinks));
