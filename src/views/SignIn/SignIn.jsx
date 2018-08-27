@@ -33,15 +33,25 @@ const styles = {
         display: "inline-block",
         color: "#9c28b0",
         padding: "0.9375rem 20px"
+    },
+    userMessage: {
+        color: "#e20d0d",
+        marginTop: "-24px"
     }
 };
 class SignIn extends Component {
     componentDidMount = () => {
         if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
     };
+    componentWillReceiveProps = nextProps => {
+        this.setState({
+            message: nextProps.user.message
+        })
+    }
     state = {
         email: '',
-        password: ''
+        password: '',
+        message: ''
     };
     signInValue = () => {
         const { email, password } = this.state;
@@ -53,8 +63,8 @@ class SignIn extends Component {
                     password: password
                 };
                 this.props.signIn(newUser)
-            }else alert("Enter password")
-        }else alert("Incorrect email")
+            }else this.setState({message: 'Enter password'})
+        }else this.setState({message: 'Incorrect email'})
     };
     getValueEmail = e => {
         this.setState({
@@ -64,6 +74,11 @@ class SignIn extends Component {
     getValuePassword = e => {
         this.setState({
             password: e.target.value
+        })
+    };
+    clear = () => {
+        this.setState({
+            message: ''
         })
     };
     render() {
@@ -88,6 +103,7 @@ class SignIn extends Component {
                                             fullWidth
                                             value={this.state.email}
                                             onChange={this.getValueEmail}
+                                            onClick={this.clear}
                                         />
                                     </GridItem>
                                 </Grid>
@@ -101,11 +117,19 @@ class SignIn extends Component {
                                             fullWidth
                                             value={this.state.password}
                                             onChange={this.getValuePassword}
+                                            onClick={this.clear}
                                         />
                                     </GridItem>
                                 </Grid>
                             </CardBody>
                             <CardFooter className={classes.CardFooter}>
+                                {
+                                    this.state.message!=='' ?
+                                        <div className={classes.userMessage}>
+                                            {this.state.message}
+                                        </div>
+                                        : null
+                                }
                                 <Button color="primary" onClick={this.signInValue}>SIGN IN</Button>
                                 <div>
                                     <p>fast time user? <Link to='/signup'>sign-up</Link></p>

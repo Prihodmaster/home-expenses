@@ -16,15 +16,29 @@ import {
 import axios from 'axios';
 import history from '../index';
 
-const head = {headers: {"Authorization": "Bearer "+localStorage.getItem('token')}}
+let head = {headers: {"Authorization": "Bearer "+localStorage.getItem('token')}}
+
+export const signIn = newUser => dispatch => {
+    axios.post('http://localhost:3001/signin', newUser)
+        .then(response => {
+            response.data === 'Incorrect email/password' || response.data === 'User with this email is not verified' ?
+                dispatch(signUpOk(response.data))
+                :
+                dispatch(signInOk(response.data))
+        })
+        .catch(function (error) {console.log(error)});
+}
+export const signInOk = data => {
+    if(data.token) localStorage.setItem('token', data.token);
+    if(localStorage.getItem('token'))  history.push('/dashboard');
+    return {
+        type: SIGN_IN,
+        payload: data
+    }
+}
 export const signUp = newUser => dispatch => {
     axios.post('http://localhost:3001/signup', newUser)
-        .then((response) => {
-            response.data === 'user with this email already exists' ?
-                alert(response.data)
-                :
-                dispatch(signUpOk(response.data))
-        })
+        .then((response) => {dispatch(signUpOk(response.data))})
         .catch((error) => {console.log(error)});
 }
 export const signUpOk = data => {
@@ -43,24 +57,6 @@ export const verifyEmail = newUser => dispatch => {
         })
         .catch(function (error) {console.log(error)});
 }
-export const signIn = newUser => dispatch => {
-    axios.post('http://localhost:3001/signin', newUser)
-        .then(response => {
-            response.data === 'Incorrect email/password' || response.data === 'User is not verified' ?
-                alert(response.data)
-                :
-                dispatch(signInOk(response.data))
-        })
-        .catch(function (error) {console.log(error)});
-}
-export const signInOk = data => {
-    if(data.token) localStorage.setItem('token', data.token);
-    if(localStorage.getItem('token'))  history.push('/dashboard');
-    return {
-        type: SIGN_IN,
-        payload: data
-    }
-}
 export const signOut = () => {
     localStorage.clear();
     return {
@@ -70,6 +66,9 @@ export const signOut = () => {
 }
 
 export const getUser = () => dispatch => {
+    if(head.headers.Authorization==="Bearer null"){
+        head = {headers: {"Authorization": "Bearer "+localStorage.getItem('token')}}
+    }
     axios.get('http://localhost:3001/user', head)
         .then(response => dispatch(getUserOk(response.data)))
         .catch(error => console.log(error));
@@ -82,6 +81,9 @@ export const getUserOk = data => {
 }
 
 export const categoriesUpdate = () => dispatch => {
+    if(head.headers.Authorization==="Bearer null"){
+        head = {headers: {"Authorization": "Bearer "+localStorage.getItem('token')}}
+    }
     axios.get('http://localhost:3001/categories', head)
         .then(response => dispatch(categoriesUpdateOk(response.data)))
         .catch(error => console.log(error))
@@ -142,6 +144,9 @@ export const moveCategoryOk = data => {
 }
 
 export const expensesUpdate = () => dispatch => {
+    if(head.headers.Authorization==="Bearer null"){
+        head = {headers: {"Authorization": "Bearer "+localStorage.getItem('token')}}
+    }
     axios.get('http://localhost:3001/expenses', head)
         .then(response => dispatch(expensesUpdateOk(response.data)))
         .catch(error => console.log(error))

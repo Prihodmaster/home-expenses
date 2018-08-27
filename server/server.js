@@ -2,63 +2,24 @@ const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const passport = require('passport');
-const passportJWT = require("passport-jwt");
+const {passport} = require('./config/passport');
+// const passport = require('passport');
+// const passportJWT = require("passport-jwt");
 const mongoose = require('mongoose');
 const app = express();
 const cors = require('cors');
 const db = "mongodb://name:12345bb@ds145921.mlab.com:45921/homeexpenses";
 const port = process.env.port || 3001;
+const {categories, expenses, users} = require('./config/models');
+
 
 app.use(bodyParser.urlencoded({extended: true }));
 app.use(bodyParser.json());
+app.use(cors());
 mongoose.connect(db,  { useNewUrlParser: true }, err => {
     if (err) throw err;
     console.log('Successfully connected');
 });
-const categoriesSchema = mongoose.Schema({
-    userID: String,
-    location: Number,
-    parentID: String,
-    subFromID: String,
-    isSub: Boolean,
-    name: String
-});
-const expensesSchema = mongoose.Schema({
-    userID: String,
-    date: String,
-    millisecDate: Number,
-    categoryID: String,
-    parentID: String,
-    name: String,
-    valueUAH: String,
-    description: String
-});
-const usersSchema = mongoose.Schema({
-    email: String,
-    verifyKey: Number,
-    password: String,
-    verified: Boolean
-});
-
-const categories = mongoose.model('categories', categoriesSchema);
-const expenses = mongoose.model('expenses', expensesSchema);
-const users = mongoose.model('users', usersSchema);
-
-const ExtractJwt = passportJWT.ExtractJwt;
-const JwtStrategy = passportJWT.Strategy;
-const jwtOpt = {}
-jwtOpt.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-jwtOpt.secretOrKey = 'secret';
-
-const strategy = new JwtStrategy(jwtOpt, (jwt_payload, done) => {
-    users.findById(jwt_payload._id)
-        .then(user => user ? done(null, user) : done(null, false))
-        .catch(err => console.log(err));
-})
-passport.use(strategy);
-app.use(cors());
-app.use(passport.initialize());
 
 app.post('/signup', (req, res) => {
     users.findOne({email: req.body.email}, (err, user) => {
@@ -72,6 +33,7 @@ app.post('/signup', (req, res) => {
                 verifyKey: Math.round(1000 + Math.random()*9999999)
             });
             user.save().then(() => {
+                res.send('User registered successfully! Please check your email and confirm registration!')
                 console.log("User successfully registered, confirm registration: " + `http://localhost:3000/emailverify/${user.email}/${user.verifyKey}`)
             })
         }
@@ -81,7 +43,7 @@ app.post('/signin', (req, res) => {
     users.findOne({email: req.body.email, password: req.body.password}, (err, user) => {
         if(err) res.json({type: false, data: "Error occured: " + err});
         if(user) {
-            if(user.verifyKey) res.send("User is not verified");
+            if(user.verifyKey) res.send("User with this email is not verified");
             let {email, _id} = user;
             jwt.sign({email, _id}, 'secret', (err, token) => {
                 user.save(err=>{if(err) console.log(err)})
@@ -168,10 +130,61 @@ app.get('/expenses', passport.authenticate('jwt', {session: false}), (req, res) 
 });
 
 app.use(bodyParser.urlencoded({ extended: true }));
-MongoClient.connect(db, (err, database) => {
+MongoClient.connect(db, (err) => {
     if (err) return console.log(err);
-    require('./app/routes')(app, database);
     app.listen(port, () => {
         console.log('We are live on ' + port);
     });
 })
+
+
+
+
+// const categoriesSchema = mongoose.Schema({
+//     userID: String,
+//     location: Number,
+//     parentID: String,
+//     subFromID: String,
+//     isSub: Boolean,
+//     name: String
+// });
+// const expensesSchema = mongoose.Schema({
+//     userID: String,
+//     date: String,
+//     millisecDate: Number,
+//     categoryID: String,
+//     parentID: String,
+//     name: String,
+//     valueUAH: String,
+//     description: String
+// });
+// const usersSchema = mongoose.Schema({
+//     email: String,
+//     verifyKey: Number,
+//     password: String,
+//     verified: Boolean
+// });
+//
+// const categories = mongoose.model('categories', categoriesSchema);
+// const expenses = mongoose.model('expenses', expensesSchema);
+// const users = mongoose.model('users', usersSchema);
+//
+//
+//
+//
+// const ExtractJwt = passportJWT.ExtractJwt;
+// const JwtStrategy = passportJWT.Strategy;
+// const jwtOpt = {}
+// jwtOpt.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+// jwtOpt.secretOrKey = 'secret';
+//
+// const strategy = new JwtStrategy(jwtOpt, (jwt_payload, done) => {
+//     users.findById(jwt_payload._id)
+//         .then(user => user ? done(null, user) : done(null, false))
+//         .catch(err => console.log(err));
+// })
+// passport.use(strategy);
+// app.use(cors());
+// app.use(passport.initialize());
+//
+//

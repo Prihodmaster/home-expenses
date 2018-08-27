@@ -30,6 +30,11 @@ const styles = theme => ({
         padding: "10px 10px",
         margin: "20px 0 0 30px",
     },
+    activeButton: {
+        padding: "10px 10px",
+        margin: "20px 0 0 30px",
+        backgroundColor: "#34aab9!important"
+    },
     container: {
         display: 'inline-block',
         flexWrap: 'wrap',
@@ -66,6 +71,7 @@ class Reports extends React.Component {
         startPeriod: new Date().setHours(0, 0, 0, 1) - Day,
         endPeriod: new Date().setHours(23, 59, 59, 999) + Day,
         open: false,
+        incorrectDate: false,
         sortedExpenses: []
         };
     componentDidMount = () => {
@@ -117,13 +123,23 @@ class Reports extends React.Component {
         })
     };
     calendarValuePrev = e => {
-        this.setState({
-            startPeriod: Date.parse(e.target.value)-10799999
+        if(e.target.value!==""){
+            this.setState({
+                incorrectDate: false,
+                startPeriod: Date.parse(e.target.value)-10799999
+            })
+        }else this.setState({
+            incorrectDate: true
         })
     };
     calendarValueNext = e => {
-        this.setState({
-            endPeriod: Date.parse(e.target.value)+75599999
+        if(e.target.value!==""){
+            this.setState({
+                incorrectDate: false,
+                endPeriod: Date.parse(e.target.value)+75599999
+            })
+        }else this.setState({
+            incorrectDate: true
         })
     };
     handleOpen = () => {
@@ -138,7 +154,7 @@ class Reports extends React.Component {
         }): this.setState({open: false})
     };
     addPeriod = () => {
-        this.state.startPeriod < this.state.endPeriod && this.setState({open: false})
+        (this.state.startPeriod < this.state.endPeriod && !this.state.incorrectDate) && this.setState({open: false})
     };
     createExpList = (expenses, exp) => {
         let sortedExpenses = [];
@@ -163,10 +179,11 @@ class Reports extends React.Component {
         }, {});
     };
     render() {
+        const { startPeriod, endPeriod, incorrectDate } = this.state;
         const { classes } = this.props;
         const { expenses, grouped } = this.props.expenses;
         let sortTime = expenses.filter(
-            i => i.millisecDate >= this.state.startPeriod && i.millisecDate <= this.state.endPeriod
+            i => i.millisecDate >= startPeriod && i.millisecDate <= endPeriod
         );
         return (
             <div>
@@ -180,7 +197,7 @@ class Reports extends React.Component {
                             <CardBody>
                                 <Grid container>
                                     <GridItem xs={4} sm={4} md={4}>
-                                        <h4 className={classes.reportsTitle}>{(new Date(this.state.startPeriod)).toString().substring(0, 15)} / {new Date(this.state.endPeriod).toString().substring(0, 15)}</h4>
+                                        <h4 className={classes.reportsTitle}>{(new Date(startPeriod)).toString().substring(0, 15)} / {new Date(endPeriod).toString().substring(0, 15)}</h4>
                                     </GridItem>
                                     <GridItem xs={8} sm={8} md={8}>
                                         <Button color="primary" className={classes.reportsButton} onClick={() => this.changePeriod("prev")}>
@@ -189,14 +206,32 @@ class Reports extends React.Component {
                                         <Button color="primary" className={classes.reportsButton} onClick={() => this.changePeriod("next")}>
                                             <KeyboardArrowRight/>
                                         </Button>
-                                        <Button color="primary" className={classes.reportsButton} onClick={this.dayPeriod}>DAY</Button>
-                                        <Button color="primary" className={classes.reportsButton} onClick={this.weekPeriod}>WEEK</Button>
-                                        <Button color="primary" className={classes.reportsButton} onClick={this.monthPeriod}>MONTH</Button>
+                                        <Button
+                                            color="primary"
+                                            className={this.state.Interval===Day ? classes.activeButton : classes.reportsButton}
+                                            onClick={this.dayPeriod}
+                                        >
+                                            DAY
+                                        </Button>
+                                        <Button
+                                            color="primary"
+                                            className={this.state.Interval===Week ? classes.activeButton : classes.reportsButton}
+                                            onClick={this.weekPeriod}
+                                        >
+                                            WEEK
+                                        </Button>
+                                        <Button
+                                            color="primary"
+                                            className={this.state.Interval===Month ? classes.activeButton : classes.reportsButton}
+                                            onClick={this.monthPeriod}
+                                        >
+                                            MONTH
+                                        </Button>
                                         <Button color="primary" className={classes.reportsButton} onClick={this.handleOpen}>PERIOD</Button>
                                         <Modal open={this.state.open} onClose={this.handleClose}>
                                             <div style={this.getModalStyle()} className={classes.paper}>
                                                 {
-                                                    this.state.startPeriod < this.state.endPeriod ?
+                                                    startPeriod < endPeriod && !incorrectDate ?
                                                         <div className={classes.modalTitle}>
                                                             <Typography variant="title" id="modal-title">Select a date period</Typography>
                                                         </div>
@@ -209,23 +244,23 @@ class Reports extends React.Component {
                                                 }
                                                 <form className={classes.container} noValidate>
                                                     <TextField
-                                                        id="date"
+                                                        id="datefrom"
                                                         label="from"
                                                         type="date"
-                                                        defaultValue={new Date(this.state.startPeriod+10800001).toISOString().substring(0, 10)}
+                                                        defaultValue={new Date(startPeriod+10800001).toISOString().substring(0, 10)}
                                                         className={classes.modalField}
-                                                        InputLabelProps={{shrink: true,}}
+                                                        InputLabelProps={{shrink: true}}
                                                         onChange={this.calendarValuePrev}
                                                     />
                                                 </form>
                                                 <form className={classes.container} noValidate>
                                                     <TextField
-                                                        id="date"
+                                                        id="datebefore"
                                                         label="before"
                                                         type="date"
-                                                        defaultValue={new Date(this.state.endPeriod).toISOString().substring(0, 10)}
+                                                        defaultValue={new Date(endPeriod).toISOString().substring(0, 10)}
                                                         className={classes.modalField}
-                                                        InputLabelProps={{shrink: true,}}
+                                                        InputLabelProps={{shrink: true}}
                                                         onChange={this.calendarValueNext}
                                                     />
                                                 </form>

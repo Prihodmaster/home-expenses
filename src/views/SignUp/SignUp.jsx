@@ -46,9 +46,9 @@ const styles = {
         color: "#9c28b0",
         padding: "0.9375rem 20px"
     } ,
-    UserSuccess: {
+    userMessage: {
         color: "#e20d0d",
-        marginTop: "-33px"
+        marginTop: "-24px"
     }
 };
 class SignUp extends React.Component {
@@ -56,11 +56,16 @@ class SignUp extends React.Component {
         email: '',
         password: '',
         rePassword: '',
-        regOK: false
+        message: ''
     };
     componentDidMount = () => {
         if(localStorage.getItem('token'))  this.props.history.push('/dashboard')
     };
+    componentWillReceiveProps = nextProps => {
+        this.setState({
+            message: nextProps.user.message
+        })
+    }
     getValueEmail = e => {
         this.setState({
             email: e.target.value
@@ -78,7 +83,7 @@ class SignUp extends React.Component {
     };
     clear = () => {
         this.setState({
-            regOK: false
+            message: ''
         })
     };
     signUp = () => {
@@ -96,12 +101,11 @@ class SignUp extends React.Component {
                     this.setState({
                         email: '',
                         password: '',
-                        rePassword: '',
-                        regOK: true
+                        rePassword: ''
                     })
-                }else alert("Enter password")
-            }else alert("Passwords do not match")
-        }else alert("Incorrect email")
+                }else this.setState({message: 'Enter password'})
+            }else this.setState({message: 'Passwords do not match'})
+        }else this.setState({message: 'Incorrect email'})
     };
     render() {
         const { classes } = this.props;
@@ -160,10 +164,9 @@ class SignUp extends React.Component {
                             </CardBody>
                             <CardFooter className={classes.CardFooter}>
                                 {
-                                    this.state.regOK ?
-                                        <div className={classes.UserSuccess}>
-                                            User registered successfully! <br/>
-                                            Please check your email and confirm the registration by the link!
+                                    this.state.message!=='' ?
+                                        <div className={classes.userMessage}>
+                                            {this.state.message}
                                         </div>
                                         : null
                                 }
