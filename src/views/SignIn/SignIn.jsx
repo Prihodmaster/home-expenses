@@ -55,7 +55,7 @@ class SignIn extends Component {
     };
     signInValue = () => {
         const { email, password } = this.state;
-        let validate = /^[a-zA-z0-9_.]{1,30}@{1,}[a-z]{3,10}\.{1}[a-z]{2,9}(.[a-z]{2,3}|)$/gm;
+        let validate = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_-]+\.+[a-zA-Z]{2,5}$/;
         if(validate.test(email)){
             if(password!==""){
                 let newUser = {
