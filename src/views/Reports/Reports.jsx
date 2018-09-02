@@ -94,17 +94,36 @@ class Reports extends React.Component {
     };
     changePeriod = change => {
         const { startPeriod, endPeriod, Interval } = this.state;
+        let month = new Date(startPeriod).getMonth();
+        let year = new Date(startPeriod).getFullYear();
         if(change==="prev"){
-            this.setState({
-                startPeriod: startPeriod - Interval,
-                endPeriod: endPeriod - Interval
-            })
+            if(Interval!==Month){
+                this.setState({
+                    startPeriod: startPeriod - Interval,
+                    endPeriod: endPeriod - Interval
+                })
+            }else{
+                month -=1;
+                this.setState({
+                    startPeriod: new Date( year, month, 1 ).setHours(0, 0, 0, 1),
+                    endPeriod: new Date( year, month+1, 0 ).setHours(23, 59, 59, 999)
+                })
+            }
         }
         if(change==="next"){
-            this.setState({
-                startPeriod: startPeriod + Interval,
-                endPeriod: endPeriod + Interval
-            })
+            if(Interval!==Month){
+                this.setState({
+                    startPeriod: startPeriod + Interval,
+                    endPeriod: endPeriod + Interval
+                })
+            }else{
+                month +=1;
+                this.setState({
+                    startPeriod: new Date( year, month, 1 ).setHours(0, 0, 0, 1),
+                    endPeriod: new Date( year, month+1, 0 ).setHours(23, 59, 59, 999)
+                })
+            }
+
         }
     };
     dayPeriod = () => {
@@ -118,8 +137,12 @@ class Reports extends React.Component {
         })
     };
     monthPeriod = () => {
+        let month = new Date(this.state.startPeriod).getMonth();
+        let year = new Date(this.state.startPeriod).getFullYear();
         this.setState({
-            Interval: Month
+            Interval: Month,
+            startPeriod: new Date( year, month, 1 ).setHours(0, 0, 0, 1),
+            endPeriod: new Date( year, month+1, 0 ).setHours(23, 59, 59, 999)
         })
     };
     calendarValuePrev = e => {
@@ -182,9 +205,7 @@ class Reports extends React.Component {
         const { startPeriod, endPeriod, incorrectDate } = this.state;
         const { classes } = this.props;
         const { expenses, grouped } = this.props.expenses;
-        let sortTime = expenses.filter(
-            i => i.millisecDate >= startPeriod && i.millisecDate <= endPeriod
-        );
+        let sortTime = expenses.filter(i => i.millisecDate >= startPeriod && i.millisecDate <= endPeriod);
         return (
             <div>
                 <Grid container>

@@ -15,6 +15,7 @@ const expensesSchema = mongoose.Schema({
     categoryID: String,
     parentID: String,
     name: String,
+    val: Boolean,
     valueUAH: String,
     description: String
 });

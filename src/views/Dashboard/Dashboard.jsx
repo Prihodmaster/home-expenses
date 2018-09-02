@@ -59,7 +59,8 @@ class Dashboard extends React.Component {
                 parentID: temp[current].parentID,
                 userID: this.props.user.user._id,
                 description: data[1].value,
-                valueUAH: data[2].value
+                valueUAH: data[2].value,
+                val: true
             };
             this.props.addExpense(expense);
             this.setState({
@@ -67,7 +68,30 @@ class Dashboard extends React.Component {
                 valueUAH: "",
                 clear: true
             });
+            if(temp[current].parentID!=="0"){this.addMainExp(temp[current].parentID, temp)}
         }else alert("Please select category and/or enter value")
+    };
+    addMainExp = (parentID, temp) => {
+        let val = false;
+        _.forEachRight([...this.props.expenses.expenses], i => {if(i.categoryID===parentID && i.val){val = i.val}});
+        temp.map(item => {
+            if(item._id===parentID && !val){
+                let expense = {
+                    date: new Date().toString(),
+                    name: item.name,
+                    millisecDate: Date.now(),
+                    categoryID: item._id,
+                    parentID: item.parentID,
+                    userID: this.props.user.user._id,
+                    description: "",
+                    valueUAH: "0",
+                    val: false
+                };
+                this.props.addExpense(expense);
+                if(item.parentID!=="0"){this.addMainExp(item.parentID, temp)}
+            }
+            return 0
+        })
     };
     render() {
         const { classes } = this.props;
@@ -98,7 +122,7 @@ class Dashboard extends React.Component {
                                         >
                                             {
                                                 categories && _.orderBy(categories, ['name'], ['asc']).map((item, i) => (
-                                                    <MenuItem key={i} value={item._id}>
+                                                    <MenuItem key={i} value={item._id} className={item.parentID==="0" ? classes.mainField : classes.TextField}>
                                                         {item.name}
                                                     </MenuItem>
                                                 ))
@@ -146,7 +170,7 @@ class Dashboard extends React.Component {
                                         tableHeaderColor="primary"
                                         tableHead={["Date", "Category", "Expenses", "Value, UAH"]}
                                         tableData={
-                                            _.orderBy(expenses, ['millisecDate'], ['desc']).slice(0, 20).map(item => {
+                                            _.orderBy(_.filter([...expenses], i => {if(i.val){return i}}), ['millisecDate'], ['desc']).slice(0, 20).map(item => {
                                                 return [item.date.substring(0, 15), item.name, item.description, String(item.valueUAH)]
                                             })
                                         }

@@ -72,6 +72,9 @@ const dashboardStyle = {
       textAlign: "center",
       fontWeight: 'bold',
       padding: '10px'
+  },
+    mainField: {
+      backgroundColor: "#c5dde0"
   }
 };
 
